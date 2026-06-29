@@ -10,8 +10,8 @@
 </style>
 </head>
 <body><div class="wrap">
-<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v3.0.0</span></h1>
-<p class="sub">楽天FXのボリンジャーバンド凡例専用パーサー。画像と入力値は外部送信しません。</p>
+<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v3.1.0</span></h1>
+<p class="sub">楽天FXのボリンジャーバンド凡例専用パーサー v3.1。全体OCR＋凡例OCRを統合し、入力値は外部送信しません。</p>
 
 <div class="card">
   <h2>画像OCR</h2>
@@ -64,7 +64,7 @@
   <div id="candidates"></div>
   <p class="small">候補ボタンは「現在値 → SMA → +2σ → -2σ → +3σ → -3σ」の順で入力欄に入ります。</p>
 </div>
-<div class="footer">BB Touch v3.0.0</div>
+<div class="footer">BB Touch v3.1.0</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
@@ -74,15 +74,41 @@ function n(v){ const x=parseFloat(String(v).replace(',', '.')); return Number.is
 function fmt(x){ return Number.isFinite(x)?Number(x).toFixed(3):''; }
 function setVal(id,val){ if(val!=null && Number.isFinite(val)) $(id).value=fmt(val); }
 function setRec(id,val,tag){ const el=$(id); if(val==null||!Number.isFinite(val)){el.textContent='未認識';el.className='v miss'}else{el.innerHTML=fmt(val)+(tag?`<small>${tag}</small>`:'');el.className='v'} }
-function normalizeText(t){return (t||'').replace(/[，、]/g,'.').replace(/[−–—ー―]/g,'-').replace(/[０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0)).replace(/[：]/g,':');}
+
+function normalizeText(t){
+  return (t||'')
+    .replace(/[，、]/g,'.')
+    .replace(/[−–—ー―]/g,'-')
+    .replace(/[０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0))
+    .replace(/[：]/g,':')
+    .replace(/[￥¥]/g,'7')
+    .replace(/\s+/g,' ');
+}
 function priceObjs(s){
-  const text=String(s);
+  const text=String(s||'');
+  const out=[];
+  // 通常価格: 199.851 / 200,203
   const re=/(?:1\d{2}|2\d{2})[\.,]\d{3}/g;
-  return [...text.matchAll(re)].map(m=>({v:parseFloat(m[0].replace(',','.')), i:m.index, raw:m[0]}));
+  for(const m of text.matchAll(re)) out.push({v:parseFloat(m[0].replace(',','.')), i:m.index, raw:m[0], kind:'normal'});
+  // 連結価格: 200555199147 -> 200.555 / 199.147 などを救済
+  const re2=/((?:1\d{2}|2\d{2})\d{3})(?=(?:1\d{2}|2\d{2})\d{3})/g;
+  for(const m of text.matchAll(re2)) out.push({v:parseFloat(m[1].slice(0,3)+'.'+m[1].slice(3)), i:m.index, raw:m[1], kind:'joined'});
+  const re3=/((?:1\d{2}|2\d{2})\d{3})/g;
+  for(const m of text.matchAll(re3)){
+    // すでに普通価格の一部なら除外
+    const before=text[m.index-1]||'', after=text[m.index+m[1].length]||'';
+    if(before==='.'||before===','||after==='.'||after===',') continue;
+    out.push({v:parseFloat(m[1].slice(0,3)+'.'+m[1].slice(3)), i:m.index, raw:m[1], kind:'plain6'});
+  }
+  out.sort((a,b)=>a.i-b.i);
+  // ほぼ同じ値は先に出たものを残す
+  const uniq=[];
+  for(const o of out){ if(!uniq.some(x=>Math.abs(x.v-o.v)<0.0005 && Math.abs(x.i-o.i)<10)) uniq.push(o); }
+  return uniq;
 }
 function allPriceValues(t){return priceObjs(t).map(o=>o.v)}
 function sanePrice(v){return Number.isFinite(v) && v>100 && v<300}
-function uniq(vals){const out=[]; for(const v of vals){ if(!out.some(x=>Math.abs(x-v)<0.0005)) out.push(v); } return out;}
+function uniq(vals){const out=[]; for(const v of vals){ if(sanePrice(v) && !out.some(x=>Math.abs(x-v)<0.0005)) out.push(v); } return out;}
 function parseCurrentFromFull(text){
   const t=normalizeText(text);
   const closes=[...t.matchAll(/C\s*[:：]?\s*((?:1\d{2}|2\d{2})[\.,]\d{3})/gi)].map(m=>parseFloat(m[1].replace(',','.')));
@@ -92,81 +118,116 @@ function parseCurrentFromFull(text){
 }
 function cutLegendText(fullText){
   const t=normalizeText(fullText);
-  const startCandidates=[t.search(/ボリンジャ|Bollinger|基準線|\[\s*21\s*\]/i)].filter(i=>i>=0);
-  const start=startCandidates.length?Math.min(...startCandidates):0;
+  const starts=[];
+  for(const re of [/ボリンジャ/i,/Bollinger/i,/基準線/i,/\[\s*21\s*\]/i]){ const m=re.exec(t); if(m) starts.push(m.index); }
+  const start=starts.length?Math.min(...starts):0;
   let end=t.length;
-  const endPatterns=[/単純移動平均/i,/期間\s*[ACH]/i,/RSI/i,/\[\s*5\s*\]/i,/\[\s*25\s*\]/i,/\[\s*200\s*\]/i];
+  const endPatterns=[/単純移動平均/i,/期間\s*[ACH]/i,/RSI/i,/\[\s*5\s*\]/i,/\[\s*25\s*\]/i,/\[\s*200\s*\]/i,/チャート\s*クイック/i];
   for(const re of endPatterns){const m=re.exec(t.slice(start)); if(m) end=Math.min(end,start+m.index);}
   return t.slice(start,end);
 }
-function tokenPriceAfterBracket(text, bracketPattern, opts={}){
+function pricesAfterToken(text, tokenRe, stopRe, maxChars=160){
   const t=normalizeText(text);
-  const re=new RegExp(bracketPattern,'i');
-  const m=re.exec(t);
+  const m=tokenRe.exec(t);
   if(!m) return [];
-  const start=m.index+m[0].length;
-  // 次の [x.x] or 移動平均まで。行が崩れてもその区間内だけ見る。
-  const rest=t.slice(start);
-  const nextRe=/\[\s*(?:2|3|4)\s*[\.,]\s*0\s*\]|\[\s*(?:5|21|25|200)\s*\]|σ\s*[ABC]|[o0]?[ABC]\s*\[|期間\s*[ACH]|単純移動平均|RSI/i;
-  const nm=nextRe.exec(rest);
-  let seg=rest.slice(0,nm?nm.index:Math.min(rest.length,90));
-  let nums=priceObjs(seg).map(o=>o.v).filter(sanePrice);
-  return nums;
+  let rest=t.slice(m.index+m[0].length);
+  const sm=stopRe?stopRe.exec(rest):null;
+  if(sm) rest=rest.slice(0, sm.index);
+  rest=rest.slice(0,maxChars);
+  return priceObjs(rest).map(o=>o.v).filter(sanePrice);
+}
+function median(vals){ if(!vals.length) return null; const s=[...vals].sort((a,b)=>a-b); return s[Math.floor(s.length/2)]; }
+function isAxisTick(v){
+  const s=fmt(v);
+  // 右軸は多くの場合 200.500 / 200.400 / 200.300 / 200.000 などキリ値。
+  return /\.(000|100|200|300|400|500|600|700|800|900)$/.test(s);
 }
 function choosePair(nums,sma,k){
-  nums=uniq(nums.filter(sanePrice));
-  // 右軸候補を除外：.000/.500/.400/.300/.200/.100/.900/.800 のぴったり目盛りは、区間内に3個以上ある時だけ後回し。
-  const tickish=v=>/\.(000|100|200|300|400|500|600|700|800|900)$/.test(fmt(v));
-  if(nums.length>2){
-    const nonTicks=nums.filter(v=>!tickish(v));
-    if(nonTicks.length>=1) nums=nonTicks.concat(nums.filter(v=>tickish(v)));
-  }
-  let up=null, low=null, tagUp='', tagLow='';
+  nums=uniq(nums);
+  let tagUp='', tagLow='', up=null, low=null;
   if(sma!=null){
-    const above=nums.filter(v=>v>sma).sort((a,b)=>Math.abs(a-sma)-Math.abs(b-sma));
-    const below=nums.filter(v=>v<sma).sort((a,b)=>Math.abs(a-sma)-Math.abs(b-sma));
+    // SMAから遠すぎる値と右軸っぽい値は後回し。σバンドはSMA周辺に対称的にある。
+    const radius=Math.max(0.08, Math.min(12, Math.abs(sma)*0.08));
+    let candidates=nums.filter(v=>Math.abs(v-sma)<=radius);
+    if(candidates.length<1) candidates=nums;
+    const nonAxis=candidates.filter(v=>!isAxisTick(v));
+    if(nonAxis.length>=1) candidates=nonAxis.concat(candidates.filter(v=>isAxisTick(v)));
+    const above=candidates.filter(v=>v>sma).sort((a,b)=>Math.abs(a-sma)-Math.abs(b-sma));
+    const below=candidates.filter(v=>v<sma).sort((a,b)=>Math.abs(a-sma)-Math.abs(b-sma));
     if(above.length){up=above[0]; tagUp='OCR'}
     if(below.length){low=below[0]; tagLow='OCR'}
-    // もし上側しか読めない時は対称推定。週足などで下側が抜ける対策。
     if(up!=null && low==null){low=2*sma-up; tagLow='SMA対称推定'}
     if(low!=null && up==null){up=2*sma-low; tagUp='SMA対称推定'}
-  } else {
-    if(nums.length>=2){ up=Math.max(nums[0],nums[1]); low=Math.min(nums[0],nums[1]); tagUp=tagLow='OCR'; }
-    else if(nums.length===1){ up=nums[0]; tagUp='OCR'; }
+  }
+  if((up==null||low==null) && nums.length>=2){
+    const a=nums[0], b=nums[1]; up=Math.max(a,b); low=Math.min(a,b); tagUp=tagLow='OCR順';
   }
   return {up,low,tagUp,tagLow,nums};
 }
-function parseBandsSmart(fullText, legendText){
-  const full=normalizeText(fullText||'');
-  const legend=normalizeText(legendText||'');
-  const combined = cutLegendText(legend) + '\n' + cutLegendText(full);
+function parseBandsFromText(rawText){
+  const text=cutLegendText(rawText);
+  const stop21=/\[\s*2\s*[\.,]\s*0\s*\]|[o0~]?\s*A\s*\[/i;
+  const stop2=/\[\s*3\s*[\.,]\s*0\s*\]|[o0~]?\s*B\s*\[|\[\s*4\s*[\.,]\s*0\s*\]|[o0~]?\s*C\s*\[/i;
+  const stop3=/\[\s*4\s*[\.,]\s*0\s*\]|[o0~]?\s*C\s*\[|単純移動平均|期間\s*[ACH]|RSI/i;
   let out={sma:null,up2:null,low2:null,up3:null,low3:null,tags:{}};
-  const smaCandidates = tokenPriceAfterBracket(combined,'\\[\\s*21\\s*\\]').concat(tokenPriceAfterBracket(combined,'基準線[^\\[]*\\[?\\s*21?\\s*\\]?'));
-  if(smaCandidates.length){out.sma=smaCandidates[0]; out.tags.sma='[21]'}
-  // bracket区間方式。OCRが σA を oA / ~A と誤読しても [2.0] が残ることを利用。
-  const nums2=tokenPriceAfterBracket(combined,'\\[\\s*2\\s*[\\.,]\\s*0\\s*\\]');
+  let smaNums=pricesAfterToken(text,/\[\s*21\s*\]|基準線[^0-9]{0,12}/i, stop21, 120);
+  if(!smaNums.length){
+    // [21] が読めない場合、凡例先頭付近の価格で、O/H/L/Cや右軸を除いた最初の価格をSMA候補にする
+    smaNums=priceObjs(text.slice(0,160)).map(o=>o.v).filter(v=>sanePrice(v)&&!isAxisTick(v));
+  }
+  if(smaNums.length){out.sma=smaNums[0]; out.tags.sma='[21]/凡例'}
+  const nums2=pricesAfterToken(text,/\[\s*2\s*[\.,]\s*0\s*\]|[o0~]?\s*A\s*\[\s*2/i, stop2, 150);
   const p2=choosePair(nums2,out.sma,2); out.up2=p2.up; out.low2=p2.low; out.tags.up2=p2.tagUp; out.tags.low2=p2.tagLow;
-  const nums3=tokenPriceAfterBracket(combined,'\\[\\s*3\\s*[\\.,]\\s*0\\s*\\]');
+  const nums3=pricesAfterToken(text,/\[\s*3\s*[\.,]\s*0\s*\]|[o0~]?\s*B\s*\[\s*3/i, stop3, 150);
   const p3=choosePair(nums3,out.sma,3); out.up3=p3.up; out.low3=p3.low; out.tags.up3=p3.tagUp; out.tags.low3=p3.tagLow;
+  return out;
+}
+function mergeParsed(a,b){
+  // bを優先するが、未認識はaで補完。凡例クロップと全体OCRの統合用。
+  const out={sma:null,up2:null,low2:null,up3:null,low3:null,tags:{}};
+  for(const key of ['sma','up2','low2','up3','low3']){
+    out[key]=b[key]!=null?b[key]:a[key];
+    out.tags[key]=b[key]!=null?(b.tags[key]||'凡例OCR'):(a.tags[key]||'全体OCR');
+  }
+  // 対称性チェック。上下が同じ値/逆転/片側欠けを補正。
+  if(out.sma!=null){
+    for(const k of [2,3]){
+      let up=out['up'+k], low=out['low'+k];
+      if(up!=null && low!=null && up<low){ const tmp=up; up=low; low=tmp; out.tags['up'+k]+='/入替'; out.tags['low'+k]+='/入替'; }
+      if(up!=null && low!=null && Math.abs(up-low)<0.0005){
+        // 同値は誤認識。上側があるとみなして下側を対称推定
+        low=2*out.sma-up; out.tags['low'+k]='同値補正';
+      }
+      if(up!=null && low==null){low=2*out.sma-up; out.tags['low'+k]='対称推定'}
+      if(low!=null && up==null){up=2*out.sma-low; out.tags['up'+k]='対称推定'}
+      out['up'+k]=up; out['low'+k]=low;
+    }
+  }
   return out;
 }
 function parseRakuten(fullText, legendText){
   const cur=parseCurrentFromFull(fullText||legendText||'');
-  const bands=parseBandsSmart(fullText,legendText);
+  const fullBands=parseBandsFromText(fullText||'');
+  const legendBands=parseBandsFromText(legendText||'');
+  const bands=mergeParsed(fullBands, legendBands);
   return {current:cur.v,sma:bands.sma,up2:bands.up2,low2:bands.low2,up3:bands.up3,low3:bands.low3,tags:{current:cur.tag,...bands.tags}};
 }
 function loadImageFromFile(file){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=URL.createObjectURL(file);});}
 function canvasToBlob(canvas){return new Promise(resolve=>canvas.toBlob(resolve,'image/png'));}
+
 async function makeLegendCropBlob(file){
   const img=await loadImageFromFile(file); const W=img.naturalWidth,H=img.naturalHeight;
-  // 左上凡例だけを広めに切り出す。右軸を物理的に切る。ヘッダーの大きさ差に対応するため縦はやや広め。
+  // 楽天FXの左上BB凡例を広めにクロップ。右軸・ローソク足の混入を避けつつ、週足/5分足の位置差に対応。
   const sx=0;
-  const sy=Math.round(H*0.18);
-  const sw=Math.round(W*0.46);
-  const sh=Math.round(H*0.31);
-  const canvas=document.createElement('canvas'); canvas.width=sw*3; canvas.height=sh*3;
-  const ctx=canvas.getContext('2d'); ctx.fillStyle='#07101e'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.imageSmoothingEnabled=true;
-  ctx.filter='contrast(1.25) saturate(1.15)';
+  const sy=Math.round(H*0.17);
+  const sw=Math.round(W*0.48);
+  const sh=Math.round(H*0.34);
+  const scale=4;
+  const canvas=document.createElement('canvas'); canvas.width=sw*scale; canvas.height=sh*scale;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#07101e'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.imageSmoothingEnabled=true;
+  ctx.filter='contrast(1.45) brightness(1.08) saturate(1.15)';
   ctx.drawImage(img,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
   $('cropPreview').src=canvas.toDataURL('image/png');
   return await canvasToBlob(canvas);
