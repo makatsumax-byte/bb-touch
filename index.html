@@ -3,331 +3,63 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>BB Touch v2.3.0</title>
-<meta name="theme-color" content="#0b1020" />
+<title>BB Touch v2.4.0</title>
 <style>
-:root{--bg:#070b16;--panel:#11182a;--panel2:#0d1424;--line:#263657;--text:#eef4ff;--muted:#aab6cf;--accent:#42d1ff;--accent2:#83f0ae;--warn:#ffd166;--bad:#ff6b6b;--ok:#78e08f;--input:#0b1222}*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#07101f,#080b14 65%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px}.wrap{max-width:760px;margin:0 auto;padding:16px 14px 36px}.hero{padding:16px 0 12px}.title{font-size:34px;font-weight:900;letter-spacing:.2px}.sub{color:var(--muted);line-height:1.5;margin-top:6px}.card{background:rgba(17,24,42,.96);border:1px solid var(--line);border-radius:22px;padding:16px;margin:14px 0;box-shadow:0 12px 28px rgba(0,0,0,.25)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:520px){.grid{grid-template-columns:1fr}}label{display:block;color:var(--muted);font-weight:700;margin:8px 0 6px}input,select,textarea{width:100%;font-size:24px;color:var(--text);background:var(--input);border:1px solid #314165;border-radius:16px;padding:14px 16px;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(66,209,255,.16)}select{appearance:none}.row{display:flex;gap:10px;align-items:center}.btn{width:100%;border:0;border-radius:18px;padding:17px 18px;font-size:22px;font-weight:900;color:#05101a;background:linear-gradient(90deg,#6bd8ff,#8bf2aa);margin-top:14px}.btn.secondary{background:#0c1324;color:var(--text);border:1px solid #314165;font-size:16px}.btn.small{font-size:16px;padding:11px 12px;border-radius:14px;margin-top:8px}.btn.warn{background:linear-gradient(90deg,#ffd166,#ffad66)}.results{display:grid;gap:12px}.result{border:1px solid #21304f;border-radius:18px;padding:15px;background:#0d1424}.result.hot{border-color:var(--accent);box-shadow:0 0 0 1px rgba(66,209,255,.25) inset}.rlabel{color:var(--muted);font-weight:800}.rvalue{font-size:44px;line-height:1.05;font-weight:950;margin:8px 0}.note{color:var(--muted);line-height:1.45}.tiny{font-size:13px;color:var(--muted);line-height:1.45}.pill{display:inline-flex;gap:6px;align-items:center;border:1px solid #314165;background:#0b1222;color:var(--muted);border-radius:999px;padding:6px 10px;font-size:13px;margin:4px 4px 0 0}.hidden{display:none!important}.ocrBox{border:1px dashed #3a4b72;border-radius:18px;padding:14px;background:#0b1222}.status{padding:12px;border-radius:14px;background:#0b1222;border:1px solid #25385d;color:var(--muted);margin-top:10px;white-space:pre-wrap}.preview{width:100%;max-height:260px;object-fit:contain;border-radius:14px;background:#050914;border:1px solid #243352;margin-top:10px}.raw{height:120px;font-size:13px;line-height:1.35}.chips{margin-top:8px}.chip{display:inline-block;padding:8px 10px;margin:4px;border:1px solid #314165;border-radius:12px;background:#0b1222;color:var(--text);font-weight:700}.chip:active{transform:scale(.98)}.sectionTitle{font-size:21px;font-weight:900;margin-bottom:8px}.footer{padding:10px 2px;color:var(--muted);font-size:12px;line-height:1.5}.danger{color:var(--bad)}.ok{color:var(--ok)}.twoBtn{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}</style>
+:root{--bg:#071124;--card:#101a31;--card2:#0b1428;--line:#26385f;--text:#edf4ff;--muted:#aab6cf;--accent:#27c8ff;--good:#80f0bb;--warn:#ffd36b;--bad:#ff8e8e}*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#071124,#0a1225);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}header{position:sticky;top:0;background:rgba(7,17,36,.92);backdrop-filter:blur(12px);z-index:5;border-bottom:1px solid var(--line);padding:14px 18px}h1{font-size:24px;margin:0}small{color:var(--muted)}main{padding:16px;max-width:980px;margin:auto}.card{background:rgba(16,26,49,.95);border:1px solid var(--line);border-radius:20px;padding:16px;margin:0 0 16px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:760px){.grid{grid-template-columns:1fr}}label{display:block;color:var(--muted);font-size:14px;margin:10px 0 6px}input,select,button,textarea{font:inherit}input,select,textarea{width:100%;padding:14px 15px;border-radius:14px;border:1px solid #31456f;background:#091329;color:var(--text);outline:none}button{border:0;border-radius:16px;padding:15px 18px;font-weight:800;background:linear-gradient(90deg,#6fd6ff,#88efb5);color:#06111e;width:100%;margin-top:12px}.ghost{background:#0b1428;color:var(--text);border:1px solid var(--line)}.previewWrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.9fr);gap:12px;align-items:start}@media(max-width:760px){.previewWrap{grid-template-columns:1fr}.stickyCheck{position:sticky;top:62px;z-index:4}}img{max-width:100%;border-radius:14px;border:1px solid var(--line);background:#000}.slot{display:grid;grid-template-columns:92px 1fr;gap:8px;align-items:center;margin:7px 0}.slot b{color:var(--muted);font-size:13px}.slot input{padding:10px 12px;border-radius:12px}.pillbox{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.pill{border:1px solid #365384;background:#0b1428;color:var(--text);border-radius:12px;padding:8px 10px;font-weight:700}.pill.excluded{opacity:.42}.note{color:var(--muted);line-height:1.55}.warn{color:var(--warn)}.bad{color:var(--bad)}.good{color:var(--good)}.result{border:1px solid #22c5ff;border-radius:18px;padding:16px;margin:12px 0;background:#0b1428}.result .title{color:var(--muted);font-size:14px}.result .num{font-size:40px;font-weight:900;letter-spacing:.02em;margin:6px 0}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}.ocrText{max-height:230px;overflow:auto;background:#071022;border:1px solid var(--line);border-radius:14px;padding:12px;color:#dbe7ff}.mini{font-size:12px;color:var(--muted)}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.debug{display:none}.showDebug .debug{display:block}</style>
 </head>
 <body>
-<div class="wrap">
-  <div class="hero">
-    <div class="title">📈 BB Touch <span style="font-size:16px;color:#8aa0c8">v2.3.0</span></div>
-    <div class="sub">手入力＋画像OCR確認モード。OCR後は高値/安値/200MA/右軸目盛りをできるだけ除外し、BB値を自動推定します。画像と認識値を確認してから計算します。</div>
-  </div>
-
-  <div class="card">
-    <div class="sectionTitle">画像から読む（v2）</div>
-    <div class="tiny">Tesseract.jsを読み込み、選択した画像をこの画面内でOCRします。OCR結果から現在値・SMA・±σをできる限り自動入力します。誤読は必ず目視確認して修正してください。</div>
-    <div class="ocrBox" style="margin-top:12px">
-      <input id="imageInput" type="file" accept="image/*" style="font-size:16px" />
-      <button class="btn secondary" id="runOcrBtn" type="button">画像OCRを実行</button>
-      <div id="ocrStatus" class="status hidden">OCR待機中</div>
-
-      <div class="reviewGrid hidden" id="reviewGrid">
-        <div>
-          <div class="tiny" style="margin:4px 0 6px">元画像</div>
-          <img id="preview" class="preview hidden" alt="preview" />
-        </div>
-        <div class="reviewPanel">
-          <div class="reviewTitle">OCR認識値</div>
-          <div class="reviewRows" id="reviewRows"></div>
-          <div class="confirmNote">左の画像と数字が一致しているか確認してください。必要なら下の入力欄を修正してから「計算する」を押します。</div>
-        </div>
-      </div>
-
-      <label for="ocrText">OCRテキスト</label>
-      <textarea id="ocrText" class="raw" placeholder="OCR結果がここに出ます。必要なら手で修正できます。"></textarea>
-      <button class="btn secondary small" id="extractBtn" type="button">OCRテキストから数値候補を抽出</button>
-      <button class="btn warn small" id="autoFillBtn" type="button">OCRから入力欄に反映</button>
-      <div id="chips" class="chips"></div>
-      <div id="autoStatus" class="status hidden"></div>
-      <div class="tiny" style="margin-top:8px">v2.2では自動計算しません。画像と認識値を確認してから、自分で「計算する」を押してください。</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="sectionTitle">入力</div>
+<header><h1>BB Touch <small>v2.4.0</small></h1><small>画像は外部送信しません。OCRはこのブラウザ内で実行します。</small></header>
+<main>
+  <section class="card">
     <div class="grid">
-      <div><label>期間</label><input id="period" inputmode="numeric" value="21"></div>
-      <div><label>対象σ</label><select id="sigma"><option value="2">2σ</option><option value="3">3σ</option></select></div>
-      <div><label>現在値</label><input id="price" inputmode="decimal" placeholder="199.794"></div>
-      <div><label>基準線 / SMA</label><input id="mean" inputmode="decimal" placeholder="201.423"></div>
-      <div><label>+2σ</label><input id="upper2" inputmode="decimal" placeholder="204.318"></div>
-      <div><label>-2σ</label><input id="lower2" inputmode="decimal" placeholder="198.528"></div>
-      <div><label>+3σ 任意</label><input id="upper3" inputmode="decimal" placeholder="任意"></div>
-      <div><label>-3σ 任意</label><input id="lower3" inputmode="decimal" placeholder="任意"></div>
+      <div>
+        <label>期間</label><input id="period" inputmode="numeric" value="21">
+      </div>
+      <div>
+        <label>σ倍率</label><select id="sigmaMult"><option value="2" selected>2σ</option><option value="3">3σ</option></select>
+      </div>
     </div>
-    <label>標準偏差</label>
-    <select id="stdMode"><option value="population">通常 / population（多くのチャート系）</option><option value="sample">sample</option></select>
-    <button class="btn" id="calcBtn" type="button">計算する</button>
-    <div class="twoBtn"><button class="btn secondary" id="saveBtn" type="button">入力を保存</button><button class="btn secondary" id="clearBtn" type="button">クリア</button></div>
-  </div>
+    <label>チャート画像</label>
+    <input id="imageInput" type="file" accept="image/*">
+    <button id="ocrBtn" class="ghost">画像OCRを実行</button>
+    <div id="status" class="note" style="margin-top:10px">画像を選んでOCRを実行してください。</div>
+  </section>
 
-  <div class="card">
-    <div class="sectionTitle">結果</div>
-    <div id="errors" class="status hidden danger"></div>
-    <div id="results" class="results"></div>
-    <div id="meta" class="footer"></div>
-  </div>
+  <section class="card">
+    <h2>画像とOCR認識値の確認</h2>
+    <div class="previewWrap">
+      <div><img id="preview" alt="preview" style="display:none"></div>
+      <div class="stickyCheck">
+        <div class="note">画像の表示値と下の認識値が合っているか確認。違う場合は直接修正してから「計算する」。</div>
+        <div class="slot"><b>現在値</b><input id="price" inputmode="decimal" placeholder="例 199.794"></div>
+        <div class="slot"><b>基準線/SMA</b><input id="sma" inputmode="decimal" placeholder="例 201.423"></div>
+        <div class="slot"><b>+2σ</b><input id="plus2" inputmode="decimal" placeholder="例 204.318"></div>
+        <div class="slot"><b>-2σ</b><input id="minus2" inputmode="decimal" placeholder="例 198.528"></div>
+        <div class="slot"><b>+3σ</b><input id="plus3" inputmode="decimal" placeholder="任意"></div>
+        <div class="slot"><b>-3σ</b><input id="minus3" inputmode="decimal" placeholder="任意"></div>
+        <button id="calcBtn">計算する</button>
+        <button id="clearBtn" class="ghost">クリア</button>
+      </div>
+    </div>
+  </section>
 
-  <div class="footer">
-    BB Touch v2.3.0 / 画像はこのページ内で読み取り、GitHubリポジトリへアップロードしません。外部OCR APIは使っていません。Tesseract.js本体はCDNから読み込まれます。
-  </div>
-</div>
+  <section class="card">
+    <h2>OCRテキスト</h2>
+    <div id="ocrText" class="ocrText mono">未実行</div>
+    <button id="extractBtn" class="ghost">OCRテキストから再抽出</button>
+    <h3>数値候補</h3>
+    <div id="candidates" class="pillbox"></div>
+    <p class="mini">候補をタップすると、現在値 → SMA → +2σ → -2σ → +3σ → -3σ の空欄に順番に入ります。</p>
+  </section>
+
+  <section class="card">
+    <h2>結果</h2>
+    <div id="results" class="note">まだ計算していません。</div>
+  </section>
+</main>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
-(function(){
-  const $=id=>document.getElementById(id);
-  const ids=['period','sigma','price','mean','upper2','lower2','upper3','lower3','stdMode'];
-  const fmt=x=>Number.isFinite(x)?x.toFixed(3):'—';
-  function num(id){const v=$(id).value.trim().replace(/,/g,''); if(v==='') return NaN; return Number(v);}
-  function setErr(msg){ if(msg){$('errors').textContent=msg;$('errors').classList.remove('hidden');}else{$('errors').classList.add('hidden');$('errors').textContent='';}}
-  function getStd(){
-    const sig=Number($('sigma').value);
-    const mean=num('mean');
-    let upper,lower;
-    if(sig===3 && Number.isFinite(num('upper3')) && Number.isFinite(num('lower3'))){upper=num('upper3');lower=num('lower3');}
-    else {upper=num('upper2');lower=num('lower2');}
-    if(!Number.isFinite(mean)||!Number.isFinite(upper)||!Number.isFinite(lower)) return null;
-    const sdFromU=(upper-mean)/sig; const sdFromL=(mean-lower)/sig;
-    const sd=(sdFromU+sdFromL)/2;
-    return {sig,mean,upper,lower,sd};
-  }
-  function calcRealtime(targetSign){
-    const g=getStd(); if(!g) return NaN;
-    const N=num('period'); const p0=num('price'); const m=g.mean; const s=g.sd; const k=g.sig; const sample=$('stdMode').value==='sample';
-    const denom=sample?N-1:N;
-    const sum=N*m; const sumsq=denom*s*s + N*m*m;
-    function band(x){
-      const ns=sum-p0+x; const nm=ns/N; const nsq=sumsq-p0*p0+x*x; const variance=(nsq-N*nm*nm)/denom; const sd=Math.sqrt(Math.max(0,variance));
-      return nm + targetSign*k*sd;
-    }
-    function f(x){return x-band(x)}
-    let lo,hi;
-    if(targetSign>0){lo=g.upper; hi=g.upper+Math.max(20, Math.abs(g.upper-p0)*5+5);} else {hi=g.lower; lo=g.lower-Math.max(20, Math.abs(p0-g.lower)*5+5);}
-    for(let i=0;i<120;i++){
-      const mid=(lo+hi)/2; const fm=f(mid);
-      if(targetSign>0){ if(fm>=0) hi=mid; else lo=mid; } else { if(fm<=0) lo=mid; else hi=mid; }
-    }
-    return (lo+hi)/2;
-  }
-  function calcCatch(type){
-    const g=getStd(); if(!g) return null;
-    const N=num('period'); const p0=num('price'); const m=g.mean; const s=g.sd; const k=g.sig; const sample=$('stdMode').value==='sample';
-    const denom=sample?N-1:N;
-    const sum=N*m; const sumsq=denom*s*s + N*m*m;
-    const sign= type==='high' ? 1 : -1;
-    function band(close){
-      const ns=sum-p0+close; const nm=ns/N; const nsq=sumsq-p0*p0+close*close; const variance=(nsq-N*nm*nm)/denom; const sd=Math.sqrt(Math.max(0,variance));
-      return nm + sign*k*sd;
-    }
-    let best={extreme: sign>0?Infinity:-Infinity, close:NaN};
-    const center=m; const span=Math.max(40, Math.abs(g.upper-g.lower)*6+10);
-    const steps=5000;
-    for(let i=0;i<=steps;i++){
-      const close=center-span + (2*span*i/steps);
-      const b=band(close);
-      if(type==='high'){
-        if(b>=close && b<best.extreme) best={extreme:b, close};
-      } else {
-        if(b<=close && b>best.extreme) best={extreme:b, close};
-      }
-    }
-    // refine around close
-    const c0=best.close; const local=span/steps*8;
-    for(let i=0;i<=4000;i++){
-      const close=c0-local+(2*local*i/4000); const b=band(close);
-      if(type==='high') { if(b>=close && b<best.extreme) best={extreme:b, close}; }
-      else { if(b<=close && b>best.extreme) best={extreme:b, close}; }
-    }
-    return best;
-  }
-  function card(label,value,note,hot){return `<div class="result ${hot?'hot':''}"><div class="rlabel">${label}</div><div class="rvalue">${fmt(value)}</div><div class="note">${note}</div></div>`}
-  function calculate(){
-    setErr(''); const N=num('period'), p=num('price'), m=num('mean'), u=num('upper2'), l=num('lower2');
-    if(!Number.isFinite(N)||N<2||!Number.isFinite(p)||!Number.isFinite(m)||!Number.isFinite(u)||!Number.isFinite(l)){setErr('期間・現在値・SMA・+2σ・-2σを入力してください。');return;}
-    const upRt=calcRealtime(1); const dnRt=calcRealtime(-1); const high=calcCatch('high'); const low=calcCatch('low');
-    $('results').innerHTML = card('① リアルタイム +σ タッチ',upRt,'現在値が上昇し、価格 = +σ(価格) になる値。',true)
-      + card('① リアルタイム -σ タッチ',dnRt,'現在値が下落し、価格 = -σ(価格) になる値。',true)
-      + card('② 高値追いつき +σ タッチ',high.extreme,`最低高値：${fmt(high.extreme)} / 必要終値：${fmt(high.close)}\nHigh = +σ(Close) の目安。`,false)
-      + card('② 安値追いつき -σ タッチ',low.extreme,`最高安値：${fmt(low.extreme)} / 必要終値：${fmt(low.close)}\nLow = -σ(Close) の目安。`,false);
-    const g=getStd(); $('meta').textContent=`推定σ：${fmt(g.sd)} / 標準偏差：${$('stdMode').value} / 最新終値として現在値を1本分だけ置換して計算。`;
-  }
-  function save(){const o={}; ids.forEach(id=>o[id]=$(id).value); localStorage.setItem('bbtouch-v2',JSON.stringify(o));}
-  function load(){try{const o=JSON.parse(localStorage.getItem('bbtouch-v2')||'{}'); ids.forEach(id=>{if(o[id]!=null)$(id).value=o[id];});}catch(e){}}
-  function clear(){['price','mean','upper2','lower2','upper3','lower3'].forEach(id=>$(id).value=''); $('results').innerHTML=''; $('meta').textContent=''; setErr(''); updateReview();}
-  function nextEmpty(){for(const id of ['price','mean','upper2','lower2','upper3','lower3']){if(!$(id).value.trim()) return id;} return 'price';}
-  function makeChips(nums){const box=$('chips'); box.innerHTML=''; nums.forEach(n=>{const b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=n; b.onclick=()=>{$(nextEmpty()).value=n; updateReview();}; box.appendChild(b);});}
-  function extractRawNumbers(text){
-    return (text.match(/\d{1,3}(?:\.\d{2,5})/g)||[]).filter(x=>Number(x)>0);
-  }
-  function extractNumbers(){
-    const text=$('ocrText').value;
-    const nums=extractRawNumbers(text);
-    const unique=[...new Set(nums)]; makeChips(unique);
-    return unique;
-  }
-  function nearly(a,b,tol){return Math.abs(a-b)<=tol;}
-  function normalizeText(t){return (t||'').replace(/[ＯO０]/g,'O').replace(/[ＣC]/g,'C').replace(/[ＨH]/g,'H').replace(/[ＬL]/g,'L').replace(/[：]/g,':');}
-  function parseOHLC(text){
-    const t=normalizeText(text);
-    const out={};
-    for(const k of ['O','H','L','C']){
-      const re=new RegExp(k+'\s*[:：]?\s*(\d{2,3}\.\d{2,5})','i');
-      const m=t.match(re); if(m) out[k]=m[1];
-    }
-    return out;
-  }
-  function cleanCandidates(nums, ohlc){
-    const used=new Set(Object.values(ohlc||{}));
-    return nums.filter(x=>{
-      const n=Number(x);
-      if(used.has(x)) return false;
-      if(!Number.isFinite(n)) return false;
-      if(n<50 || n>300) return false;
-      if(/\.0{2,5}$/.test(x)) return false; // 右軸の 210.000 などを除外
-      return true;
-    });
-  }
-
-  function setReviewValue(label, value){
-    const miss = value==null || value==='' || !Number.isFinite(Number(value));
-    return `<div class="reviewRow"><div class="reviewKey">${label}</div><div class="reviewVal ${miss?'missing':''}">${miss?'未認識':fmt(Number(value))}</div></div>`;
-  }
-  function updateReview(){
-    const rows=$('reviewRows'); if(!rows) return;
-    rows.innerHTML = setReviewValue('現在値',$('price').value)
-      + setReviewValue('SMA',$('mean').value)
-      + setReviewValue('+2σ',$('upper2').value)
-      + setReviewValue('-2σ',$('lower2').value)
-      + setReviewValue('+3σ',$('upper3').value)
-      + setReviewValue('-3σ',$('lower3').value);
-    $('reviewGrid').classList.remove('hidden');
-  }
-  function isAxisTickStr(x){
-    const n=Number(x);
-    if(!Number.isFinite(n)) return false;
-    // 210.000, 200.000, 190.000 のような右軸目盛りを除外
-    return /\.0{2,5}$/.test(String(x)) && Math.abs(n-Math.round(n/10)*10)<0.0001;
-  }
-  function uniqueWithOrder(arr){
-    const seen=new Set(); const out=[];
-    for(const x of arr){ const key=Number(x).toFixed(3); if(!seen.has(key)){seen.add(key); out.push(Number(x));} }
-    return out;
-  }
-  function inferBBValues(text){
-    const raw=extractRawNumbers(text);
-    const ohlc=parseOHLC(text);
-    const oVals=Object.values(ohlc).map(Number).filter(Number.isFinite);
-    const close = Number.isFinite(Number(ohlc.C)) ? Number(ohlc.C) : NaN;
-    const priceRef = Number.isFinite(close) ? close : (Number.isFinite(Number($('price').value)) ? Number($('price').value) : NaN);
-
-    // 候補クリーニング：OHLC・右軸目盛り・日付/小さすぎる値を除外
-    let seq = [];
-    for(const s of raw){
-      const v=Number(s);
-      if(!Number.isFinite(v)) continue;
-      if(v<50 || v>300) continue;
-      if(isAxisTickStr(s)) continue;
-      if(oVals.some(o=>Math.abs(o-v)<0.0006)) continue; // O/H/L/C除外
-      if(Number.isFinite(priceRef) && Math.abs(v-priceRef)>25) continue;
-      seq.push(v);
-    }
-    seq = uniqueWithOrder(seq);
-
-    const result={price: Number.isFinite(close)?close:NaN, mean:NaN, upper2:NaN, lower2:NaN, upper3:NaN, lower3:NaN, notes:[], candidates:seq};
-    if(Number.isFinite(result.price)) result.notes.push('現在値=Cを採用');
-
-    if(!seq.length) return result;
-
-    // 1) まずOCR出現順を強く尊重。楽天FXのBB表示は OHLC の後に「基準線→+2→-2→+3→-3」順で出やすい。
-    // ただし高値/安値ラベルや移動平均が混ざるため、後段で整合性チェックする。
-    let mean = seq[0];
-
-    // 2) 対称性チェックでSMA候補を補正。
-    // 「候補mの上下にだいたい同じ距離のペアがある」ものをSMAとして高評価。
-    let bestMean={m:mean,score:999};
-    for(let mi=0; mi<Math.min(seq.length,8); mi++){
-      const m=seq[mi];
-      const above=seq.filter(v=>v>m+0.03);
-      const below=seq.filter(v=>v<m-0.03);
-      let local=999;
-      for(const u of above){
-        for(const l of below){
-          const wu=u-m, wl=m-l;
-          if(wu<0.05 || wl<0.05 || wu>15 || wl>15) continue;
-          const symmetry=Math.abs(wu-wl);
-          const pairWidth=(wu+wl)/2;
-          // BB幅として自然なペアを優先、出現順が早い値も少し優先
-          const score=symmetry*2 + mi*0.25 + Math.abs(pairWidth-3)*0.04;
-          if(score<local) local=score;
-        }
-      }
-      // ただし候補が価格に近すぎる場合は高値/安値/MAの可能性があるので軽く減点
-      if(Number.isFinite(priceRef) && Math.abs(m-priceRef)<0.18) local+=1.5;
-      if(local<bestMean.score) bestMean={m,score:local};
-    }
-    // 対称ペアがかなり良い場合のみ補正。そうでなければOCR順の最初をSMAにする。
-    if(bestMean.score<1.2){ mean=bestMean.m; result.notes.push('SMA=上下対称性から推定'); }
-    else { result.notes.push('SMA=OCR順から推定'); }
-    result.mean=mean;
-
-    // 3) +2σはSMAより上で最も近い「自然なBB候補」。高値ラベル混入を避けるため、OHLCのHに近い値は除外済み。
-    const above=seq.filter(v=>v>mean+0.03).sort((a,b)=>a-b);
-    const below=seq.filter(v=>v<mean-0.03).sort((a,b)=>b-a);
-    if(above.length){ result.upper2=above[0]; result.notes.push('+2σ=SMA直上候補を採用'); }
-
-    // 4) -2σは、OCRで近い対称値があれば採用。なければSMAと+2σから対称推定。
-    if(Number.isFinite(result.upper2)){
-      const targetL=2*mean-result.upper2;
-      const lowerHit=below.find(v=>Math.abs(v-targetL)<=0.18);
-      if(Number.isFinite(lowerHit)){ result.lower2=lowerHit; result.notes.push('-2σ=対称に近いOCR候補を採用'); }
-      else { result.lower2=targetL; result.notes.push('-2σ=OCR欠落のため対称推定'); }
-
-      // 5) +3/-3は任意。+2幅の1.5倍近辺を優先し、200MAなど近すぎる値は除外。
-      const w=result.upper2-mean;
-      const targetU3=mean+w*1.5;
-      const targetL3=mean-w*1.5;
-      const upper3C=seq.filter(v=>v>result.upper2+0.05).sort((a,b)=>Math.abs(a-targetU3)-Math.abs(b-targetU3))[0];
-      const lower3C=seq.filter(v=>v<result.lower2-0.05).sort((a,b)=>Math.abs(a-targetL3)-Math.abs(b-targetL3))[0];
-      if(Number.isFinite(upper3C) && Math.abs(upper3C-targetU3)<=0.45){ result.upper3=upper3C; result.notes.push('+3σ候補を入力'); }
-      if(Number.isFinite(lower3C) && Math.abs(lower3C-targetL3)<=0.45){ result.lower3=lower3C; result.notes.push('-3σ候補を入力'); }
-    }
-    return result;
-  }
-
-  function autoFillFromOCR(){
-    const text=$('ocrText').value;
-    extractNumbers();
-    const inf=inferBBValues(text);
-    const put=(id,v)=>{ if(Number.isFinite(v)) $(id).value=fmt(v); };
-    put('price',inf.price);
-    put('mean',inf.mean);
-    put('upper2',inf.upper2);
-    put('lower2',inf.lower2);
-    put('upper3',inf.upper3);
-    put('lower3',inf.lower3);
-
-    const ok=['price','mean','upper2','lower2'].every(id=>$(id).value.trim());
-    $('autoStatus').classList.remove('hidden');
-    $('autoStatus').textContent = (ok?'自動入力しました。必ず画像横で目視確認してください。\n':'自動入力できない項目があります。候補から手入力してください。\n')
-      + inf.notes.join(' / ')
-      + (inf.candidates.length ? '\nBB候補: '+inf.candidates.map(v=>fmt(v)).join(', ') : '');
-    updateReview();
-  }
-  ['price' ,'mean','upper2','lower2','upper3','lower3'].forEach(id=>$(id).addEventListener('input',updateReview)); $('calcBtn').addEventListener('click',calculate); $('saveBtn').addEventListener('click',()=>{save(); alert('保存しました');}); $('clearBtn').addEventListener('click',clear); $('extractBtn').addEventListener('click',extractNumbers); $('autoFillBtn').addEventListener('click',autoFillFromOCR);
-  $('imageInput').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0]; if(!f) return; const url=URL.createObjectURL(f); $('preview').src=url; $('preview').classList.remove('hidden'); $('reviewGrid').classList.remove('hidden'); updateReview();});
-  $('runOcrBtn').addEventListener('click',async()=>{
-    const f=$('imageInput').files&&$('imageInput').files[0]; if(!f){alert('画像を選択してください');return;}
-    if(!window.Tesseract){alert('OCRライブラリの読み込みに失敗しました。通信状態を確認してください。');return;}
-    $('ocrStatus').classList.remove('hidden'); $('ocrStatus').textContent='OCR準備中…';
-    try{
-      const res=await Tesseract.recognize(f,'eng',{logger:m=>{if(m.status){$('ocrStatus').textContent=`OCR中: ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`;}}});
-      $('ocrText').value=res.data.text||''; $('ocrStatus').textContent='OCR完了。認識値を確認してください。'; extractNumbers(); autoFillFromOCR();
-    }catch(err){$('ocrStatus').textContent='OCR失敗: '+(err&&err.message?err.message:String(err));}
-  });
-  load(); updateReview();
-})();
-</script>
-</body>
-</html>
+const $=id=>document.getElementById(id);
+let imageDataUrl=null;
+const fields=['price','sma','plus2','minus2','plus3','minus3'];
+function num(v){ if(v==null) return NaN; const s=String(v).replace(/[，,]/g,'.').replace(/[^
