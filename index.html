@@ -5,23 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>BB Touch</title>
 <style>
-:root{--bg:#080d1b;--card:#10182b;--card2:#0c1325;--line:#2c3b62;--text:#eef3ff;--muted:#aeb8d0;--accent:#25c7ff;--accent2:#8cf0b0;--warn:#ffbd66}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#081022,#060914);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px}.wrap{max-width:820px;margin:0 auto;padding:18px 14px 42px}h1{font-size:34px;margin:8px 0 4px}.sub{color:var(--muted);margin:0 0 18px}.card{background:rgba(16,24,43,.95);border:1px solid var(--line);border-radius:22px;padding:16px;margin:14px 0;box-shadow:0 12px 40px rgba(0,0,0,.22)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:680px){.grid{grid-template-columns:1fr}}label{display:block;color:var(--muted);font-weight:700;margin:8px 0 6px}input,select,textarea{width:100%;background:var(--card2);color:var(--text);border:1px solid #34456f;border-radius:16px;padding:13px 14px;font-size:21px;outline:none}textarea{font-size:15px;line-height:1.45;min-height:130px}button{width:100%;border:0;border-radius:18px;padding:16px 14px;font-size:20px;font-weight:900;color:#06101c;background:linear-gradient(90deg,#71d6ff,#86efac);margin:10px 0}.btn2{background:#0c1325;color:var(--text);border:1px solid #34456f}.btnWarn{background:linear-gradient(90deg,#ffe27a,#ffac63);color:#111}.row{display:flex;gap:10px;align-items:center}.pill{display:inline-block;padding:8px 12px;border:1px solid #34456f;border-radius:14px;margin:5px;background:#0c1325;color:var(--text);font-weight:800}.previewBox{display:grid;grid-template-columns:1.05fr .95fr;gap:12px;align-items:start}@media(max-width:680px){.previewBox{grid-template-columns:1fr}}.imgBox{border:1px dashed #405482;border-radius:20px;padding:10px;background:#070d1a;text-align:center}.imgBox img{max-width:100%;max-height:460px;border-radius:10px;object-fit:contain}.recognized{border:1px solid #2b3c63;border-radius:20px;padding:16px;background:#0b1324}.recognized h2{margin:0 0 12px;font-size:26px}.kv{display:grid;grid-template-columns:105px 1fr;gap:8px;border-bottom:1px solid #26375d;padding:9px 0;align-items:center}.kv:last-child{border-bottom:0}.k{color:var(--muted);font-weight:900;font-size:20px}.v{font-size:30px;font-weight:950}.miss{color:#ffcdcd;font-size:21px}.result{border:1px solid #25c7ff;border-radius:20px;padding:16px;margin:12px 0;background:#0d1629}.result .title{color:var(--muted);font-weight:800}.result .num{font-size:44px;font-weight:950;margin:6px 0}.small{color:var(--muted);font-size:14px;line-height:1.5}.debug{white-space:pre-wrap}.hide{display:none}.ok{color:#8cf0b0}.bad{color:#ffb4b4}.footer{color:#77839f;text-align:center;font-size:12px;margin-top:20px}
+:root{--bg:#080d1b;--card:#10182b;--card2:#0c1325;--line:#2c3b62;--text:#eef3ff;--muted:#aeb8d0;--accent:#25c7ff;--accent2:#8cf0b0;--warn:#ffbd66;--bad:#ffb4b4}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#081022,#060914);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px}.wrap{max-width:880px;margin:0 auto;padding:18px 14px 42px}h1{font-size:34px;margin:8px 0 4px}.sub{color:var(--muted);margin:0 0 18px}.card{background:rgba(16,24,43,.95);border:1px solid var(--line);border-radius:22px;padding:16px;margin:14px 0;box-shadow:0 12px 40px rgba(0,0,0,.22)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:680px){.grid{grid-template-columns:1fr}}label{display:block;color:var(--muted);font-weight:800;margin:8px 0 6px}input,select,textarea{width:100%;background:var(--card2);color:var(--text);border:1px solid #34456f;border-radius:16px;padding:13px 14px;font-size:21px;outline:none}textarea{font-size:15px;line-height:1.45;min-height:150px}button{width:100%;border:0;border-radius:18px;padding:16px 14px;font-size:20px;font-weight:900;color:#06101c;background:linear-gradient(90deg,#71d6ff,#86efac);margin:10px 0}.btn2{background:#0c1325;color:var(--text);border:1px solid #34456f}.btnWarn{background:linear-gradient(90deg,#ffe27a,#ffac63);color:#111}.row{display:flex;gap:10px;align-items:center}.pill{display:inline-block;padding:8px 12px;border:1px solid #34456f;border-radius:14px;margin:5px;background:#0c1325;color:var(--text);font-weight:800}.previewBox{display:grid;grid-template-columns:1.05fr .95fr;gap:12px;align-items:start}@media(max-width:680px){.previewBox{grid-template-columns:1fr}}.imgBox{border:1px dashed #405482;border-radius:20px;padding:10px;background:#070d1a;text-align:center}.imgBox img{max-width:100%;max-height:460px;border-radius:10px;object-fit:contain}.cropBox img{max-height:260px;image-rendering:auto}.recognized{border:1px solid #2b3c63;border-radius:20px;padding:16px;background:#0b1324}.recognized h2{margin:0 0 12px;font-size:26px}.kv{display:grid;grid-template-columns:105px 1fr;gap:8px;border-bottom:1px solid #26375d;padding:9px 0;align-items:center}.kv:last-child{border-bottom:0}.k{color:var(--muted);font-weight:900;font-size:20px}.v{font-size:30px;font-weight:950}.v small{display:block;font-size:12px;color:var(--warn);font-weight:800}.miss{color:var(--bad);font-size:21px}.result{border:1px solid #25c7ff;border-radius:20px;padding:16px;margin:12px 0;background:#0d1629}.result .title{color:var(--muted);font-weight:800}.result .num{font-size:44px;font-weight:950;margin:6px 0}.small{color:var(--muted);font-size:14px;line-height:1.5}.debug{white-space:pre-wrap}.hide{display:none}.ok{color:#8cf0b0}.bad{color:#ffb4b4}.selectRow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}@media(max-width:680px){.selectRow{grid-template-columns:1fr}}.footer{color:#77839f;text-align:center;font-size:12px;margin-top:20px}
 </style>
 </head>
 <body><div class="wrap">
-<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v2.12.0</span></h1>
-<p class="sub">楽天FXスクショのOCR値を確認してから、①②を計算します。画像と入力値は外部送信しません。</p>
+<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v3.0.0</span></h1>
+<p class="sub">楽天FXのボリンジャーバンド凡例専用パーサー。画像と入力値は外部送信しません。</p>
 
 <div class="card">
   <h2>画像OCR</h2>
   <input id="imageInput" type="file" accept="image/*">
   <button id="ocrBtn" class="btnWarn">画像OCRを実行</button>
-  <p id="status" class="small">画像を選んでOCRを実行してください。</p>
+  <p id="status" class="small">楽天FXの元チャートスクショを選んでください。BB Touch画面のスクショではなく、楽天FXアプリのスクショを使ってください。</p>
   <div id="confirmArea" class="previewBox hide">
     <div>
       <label>元画像</label>
       <div class="imgBox"><img id="preview"></div>
+      <label>BB凡例クロップ（ここからSMA/σを読む）</label>
+      <div class="imgBox cropBox"><img id="cropPreview"></div>
     </div>
     <div class="recognized">
       <h2>OCR認識値</h2>
@@ -31,7 +33,7 @@
       <div class="kv"><div class="k">-2σ</div><div id="rLow2" class="v miss">未認識</div></div>
       <div class="kv"><div class="k">+3σ</div><div id="rUp3" class="v miss">未認識</div></div>
       <div class="kv"><div class="k">-3σ</div><div id="rLow3" class="v miss">未認識</div></div>
-      <p class="small">左の画像と数字が一致しているか確認してください。違う場合は下の入力欄を修正してから「計算する」。</p>
+      <p class="small">数字が画像と一致しているか確認。違う場合は下の入力欄か候補ボタンで修正してから「計算する」。</p>
     </div>
   </div>
 </div>
@@ -60,8 +62,9 @@
   <button id="extractBtn" class="btn2">OCRテキストから数値候補を抽出</button>
   <button id="applyBtn" class="btnWarn">OCRから入力欄に反映</button>
   <div id="candidates"></div>
+  <p class="small">候補ボタンは「現在値 → SMA → +2σ → -2σ → +3σ → -3σ」の順で入力欄に入ります。</p>
 </div>
-<div class="footer">BB Touch v2.12.0</div>
+<div class="footer">BB Touch v3.0.0</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
@@ -70,137 +73,123 @@ const ids=['current','sma','up2','low2','up3','low3'];
 function n(v){ const x=parseFloat(String(v).replace(',', '.')); return Number.isFinite(x)?x:null; }
 function fmt(x){ return Number.isFinite(x)?Number(x).toFixed(3):''; }
 function setVal(id,val){ if(val!=null && Number.isFinite(val)) $(id).value=fmt(val); }
-function setRec(id,val){ const el=$(id); if(val==null||!Number.isFinite(val)){el.textContent='未認識';el.className='v miss'}else{el.textContent=fmt(val);el.className='v'} }
-function normalizeText(t){return (t||'').replace(/[，、]/g,'.').replace(/[−–—ー]/g,'-').replace(/[０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0));}
-function priceNums(s){
-  // 100〜299.xxx の価格だけを拾う。カンマ小数も許容。
+function setRec(id,val,tag){ const el=$(id); if(val==null||!Number.isFinite(val)){el.textContent='未認識';el.className='v miss'}else{el.innerHTML=fmt(val)+(tag?`<small>${tag}</small>`:'');el.className='v'} }
+function normalizeText(t){return (t||'').replace(/[，、]/g,'.').replace(/[−–—ー―]/g,'-').replace(/[０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0)).replace(/[：]/g,':');}
+function priceObjs(s){
+  const text=String(s);
   const re=/(?:1\d{2}|2\d{2})[\.,]\d{3}/g;
-  return [...String(s).matchAll(re)].map(m=>({v:parseFloat(m[0].replace(',','.')), i:m.index, raw:m[0]}));
+  return [...text.matchAll(re)].map(m=>({v:parseFloat(m[0].replace(',','.')), i:m.index, raw:m[0]}));
 }
-function allPriceValues(t){return priceNums(t).map(o=>o.v)}
+function allPriceValues(t){return priceObjs(t).map(o=>o.v)}
 function sanePrice(v){return Number.isFinite(v) && v>100 && v<300}
-function regexIndex(t,re){ const m=re.exec(t); return m?m.index:-1; }
-function segmentAfterRegex(text,re){
-  const t=normalizeText(text);
-  re.lastIndex=0;
-  const m=re.exec(t);
-  if(!m) return '';
-  const start=m.index + m[0].length;
-  const rest=t.slice(start);
-  // 次のインジケーター行までで切る。右軸目盛り混入を避けるため最大80文字。
-  const nextRe=/(\[\s*(?:2|3|4)\s*[\.,]\s*0\s*\]|\[\s*(?:5|21|25|200)\s*\]|σ\s*[ABC]|[o0]?[ABC]\s*\[|期間[ACH])/i;
-  const nm=nextRe.exec(rest);
-  const end=nm?nm.index:Math.min(rest.length,80);
-  return rest.slice(0,end);
-}
-function firstPriceAfter(text,re){
-  const seg=segmentAfterRegex(text,re);
-  const nums=priceNums(seg).map(o=>o.v).filter(sanePrice);
-  return nums.length?nums[0]:null;
-}
-function pairAfter(text,re,sma){
-  const seg=segmentAfterRegex(text,re);
-  let nums=priceNums(seg).map(o=>o.v).filter(sanePrice);
-  // 右軸目盛りは、凡例クロップ側では基本混ざらないが、混ざっても最初の2つだけ採用。
-  let up=nums[0]??null;
-  let low=nums[1]??null;
-  if(sma!=null){
-    // 2つ拾えた場合は、SMAより上・下になるように補正。
-    const above=nums.filter(v=>v>sma);
-    const below=nums.filter(v=>v<sma);
-    if(above.length) up=above[0];
-    if(below.length) low=below[0];
-    // 下側がOCRで抜けた場合は対称推定。
-    if(up!=null && low==null) low=2*sma-up;
-    // 上側が抜けて下側だけある場合も対称推定。
-    if(up==null && low!=null) up=2*sma-low;
-  }
-  if(up!=null && low!=null && up<low){ const tmp=up; up=low; low=tmp; }
-  return {up,low};
-}
+function uniq(vals){const out=[]; for(const v of vals){ if(!out.some(x=>Math.abs(x-v)<0.0005)) out.push(v); } return out;}
 function parseCurrentFromFull(text){
   const t=normalizeText(text);
   const closes=[...t.matchAll(/C\s*[:：]?\s*((?:1\d{2}|2\d{2})[\.,]\d{3})/gi)].map(m=>parseFloat(m[1].replace(',','.')));
-  if(closes.length) return closes[closes.length-1];
+  if(closes.length) return {v:closes[closes.length-1], tag:'C:'};
   const vals=[...t.matchAll(/現在値[^0-9]*((?:1\d{2}|2\d{2})[\.,]\d{3})/g)].map(m=>parseFloat(m[1].replace(',','.')));
-  return vals.length?vals[0]:null;
+  return vals.length?{v:vals[0],tag:'現在値'}:{v:null,tag:''};
 }
-function parseBandsFromLegend(text){
+function cutLegendText(fullText){
+  const t=normalizeText(fullText);
+  const startCandidates=[t.search(/ボリンジャ|Bollinger|基準線|\[\s*21\s*\]/i)].filter(i=>i>=0);
+  const start=startCandidates.length?Math.min(...startCandidates):0;
+  let end=t.length;
+  const endPatterns=[/単純移動平均/i,/期間\s*[ACH]/i,/RSI/i,/\[\s*5\s*\]/i,/\[\s*25\s*\]/i,/\[\s*200\s*\]/i];
+  for(const re of endPatterns){const m=re.exec(t.slice(start)); if(m) end=Math.min(end,start+m.index);}
+  return t.slice(start,end);
+}
+function tokenPriceAfterBracket(text, bracketPattern, opts={}){
   const t=normalizeText(text);
-  const out={sma:null,up2:null,low2:null,up3:null,low3:null};
-  // 楽天FX凡例用：基準線[21]、σA[2.0]、σB[3.0] を優先。
-  out.sma = firstPriceAfter(t,/\[\s*21\s*\]/i);
-  if(out.sma==null) out.sma = firstPriceAfter(t,/基準線/i);
-  const p2 = pairAfter(t,/\[\s*2\s*[\.,]\s*0\s*\]/i,out.sma);
-  out.up2=p2.up; out.low2=p2.low;
-  const p3 = pairAfter(t,/\[\s*3\s*[\.,]\s*0\s*\]/i,out.sma);
-  out.up3=p3.up; out.low3=p3.low;
+  const re=new RegExp(bracketPattern,'i');
+  const m=re.exec(t);
+  if(!m) return [];
+  const start=m.index+m[0].length;
+  // 次の [x.x] or 移動平均まで。行が崩れてもその区間内だけ見る。
+  const rest=t.slice(start);
+  const nextRe=/\[\s*(?:2|3|4)\s*[\.,]\s*0\s*\]|\[\s*(?:5|21|25|200)\s*\]|σ\s*[ABC]|[o0]?[ABC]\s*\[|期間\s*[ACH]|単純移動平均|RSI/i;
+  const nm=nextRe.exec(rest);
+  let seg=rest.slice(0,nm?nm.index:Math.min(rest.length,90));
+  let nums=priceObjs(seg).map(o=>o.v).filter(sanePrice);
+  return nums;
+}
+function choosePair(nums,sma,k){
+  nums=uniq(nums.filter(sanePrice));
+  // 右軸候補を除外：.000/.500/.400/.300/.200/.100/.900/.800 のぴったり目盛りは、区間内に3個以上ある時だけ後回し。
+  const tickish=v=>/\.(000|100|200|300|400|500|600|700|800|900)$/.test(fmt(v));
+  if(nums.length>2){
+    const nonTicks=nums.filter(v=>!tickish(v));
+    if(nonTicks.length>=1) nums=nonTicks.concat(nums.filter(v=>tickish(v)));
+  }
+  let up=null, low=null, tagUp='', tagLow='';
+  if(sma!=null){
+    const above=nums.filter(v=>v>sma).sort((a,b)=>Math.abs(a-sma)-Math.abs(b-sma));
+    const below=nums.filter(v=>v<sma).sort((a,b)=>Math.abs(a-sma)-Math.abs(b-sma));
+    if(above.length){up=above[0]; tagUp='OCR'}
+    if(below.length){low=below[0]; tagLow='OCR'}
+    // もし上側しか読めない時は対称推定。週足などで下側が抜ける対策。
+    if(up!=null && low==null){low=2*sma-up; tagLow='SMA対称推定'}
+    if(low!=null && up==null){up=2*sma-low; tagUp='SMA対称推定'}
+  } else {
+    if(nums.length>=2){ up=Math.max(nums[0],nums[1]); low=Math.min(nums[0],nums[1]); tagUp=tagLow='OCR'; }
+    else if(nums.length===1){ up=nums[0]; tagUp='OCR'; }
+  }
+  return {up,low,tagUp,tagLow,nums};
+}
+function parseBandsSmart(fullText, legendText){
+  const full=normalizeText(fullText||'');
+  const legend=normalizeText(legendText||'');
+  const combined = cutLegendText(legend) + '\n' + cutLegendText(full);
+  let out={sma:null,up2:null,low2:null,up3:null,low3:null,tags:{}};
+  const smaCandidates = tokenPriceAfterBracket(combined,'\\[\\s*21\\s*\\]').concat(tokenPriceAfterBracket(combined,'基準線[^\\[]*\\[?\\s*21?\\s*\\]?'));
+  if(smaCandidates.length){out.sma=smaCandidates[0]; out.tags.sma='[21]'}
+  // bracket区間方式。OCRが σA を oA / ~A と誤読しても [2.0] が残ることを利用。
+  const nums2=tokenPriceAfterBracket(combined,'\\[\\s*2\\s*[\\.,]\\s*0\\s*\\]');
+  const p2=choosePair(nums2,out.sma,2); out.up2=p2.up; out.low2=p2.low; out.tags.up2=p2.tagUp; out.tags.low2=p2.tagLow;
+  const nums3=tokenPriceAfterBracket(combined,'\\[\\s*3\\s*[\\.,]\\s*0\\s*\\]');
+  const p3=choosePair(nums3,out.sma,3); out.up3=p3.up; out.low3=p3.low; out.tags.up3=p3.tagUp; out.tags.low3=p3.tagLow;
   return out;
 }
 function parseRakuten(fullText, legendText){
-  const out={current:null,sma:null,up2:null,low2:null,up3:null,low3:null};
-  out.current=parseCurrentFromFull(fullText||legendText||'');
-  const bands=parseBandsFromLegend(legendText||fullText||'');
-  Object.assign(out,bands);
-  return out;
+  const cur=parseCurrentFromFull(fullText||legendText||'');
+  const bands=parseBandsSmart(fullText,legendText);
+  return {current:cur.v,sma:bands.sma,up2:bands.up2,low2:bands.low2,up3:bands.up3,low3:bands.low3,tags:{current:cur.tag,...bands.tags}};
 }
-function loadImageFromFile(file){
-  return new Promise((resolve,reject)=>{ const img=new Image(); img.onload=()=>resolve(img); img.onerror=reject; img.src=URL.createObjectURL(file); });
-}
+function loadImageFromFile(file){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=URL.createObjectURL(file);});}
+function canvasToBlob(canvas){return new Promise(resolve=>canvas.toBlob(resolve,'image/png'));}
 async function makeLegendCropBlob(file){
-  const img=await loadImageFromFile(file);
-  const W=img.naturalWidth, H=img.naturalHeight;
-  // 楽天FXの凡例は左上のチャート内に固定表示されるので、左側だけをOCRする。
-  // 右軸目盛りを物理的に切り落とすのが狙い。
+  const img=await loadImageFromFile(file); const W=img.naturalWidth,H=img.naturalHeight;
+  // 左上凡例だけを広めに切り出す。右軸を物理的に切る。ヘッダーの大きさ差に対応するため縦はやや広め。
   const sx=0;
-  const sy=Math.round(H*0.19);
+  const sy=Math.round(H*0.18);
   const sw=Math.round(W*0.46);
-  const sh=Math.round(H*0.28);
-  const canvas=document.createElement('canvas');
-  canvas.width=sw*2; canvas.height=sh*2;
-  const ctx=canvas.getContext('2d');
-  ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.imageSmoothingEnabled=true;
+  const sh=Math.round(H*0.31);
+  const canvas=document.createElement('canvas'); canvas.width=sw*3; canvas.height=sh*3;
+  const ctx=canvas.getContext('2d'); ctx.fillStyle='#07101e'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.imageSmoothingEnabled=true;
+  ctx.filter='contrast(1.25) saturate(1.15)';
   ctx.drawImage(img,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
-  return await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+  $('cropPreview').src=canvas.toDataURL('image/png');
+  return await canvasToBlob(canvas);
 }
-function updateRecognized(o){ setRec('rCurrent',o.current); setRec('rSma',o.sma); setRec('rUp2',o.up2); setRec('rLow2',o.low2); setRec('rUp3',o.up3); setRec('rLow3',o.low3); }
-function applyParsed(){ const txt=$('ocrText').value; const parts=txt.split('--- BB凡例クロップ ---'); const full=parts[0]||txt; const legend=parts[1]||txt; const o=parseRakuten(full,legend); setVal('current',o.current); setVal('sma',o.sma); setVal('up2',o.up2); setVal('low2',o.low2); setVal('up3',o.up3); setVal('low3',o.low3); updateRecognized(o); makeCandidates(); return o; }
+function updateRecognized(o){ setRec('rCurrent',o.current,o.tags?.current); setRec('rSma',o.sma,o.tags?.sma); setRec('rUp2',o.up2,o.tags?.up2); setRec('rLow2',o.low2,o.tags?.low2); setRec('rUp3',o.up3,o.tags?.up3); setRec('rLow3',o.low3,o.tags?.low3); }
+function splitOcrSections(txt){ const t=txt||''; const p=t.split('--- BB凡例クロップ ---'); return {full:p[0]||t, legend:p[1]||t}; }
+function applyParsed(){ const s=splitOcrSections($('ocrText').value); const o=parseRakuten(s.full,s.legend); setVal('current',o.current); setVal('sma',o.sma); setVal('up2',o.up2); setVal('low2',o.low2); setVal('up3',o.up3); setVal('low3',o.low3); updateRecognized(o); makeCandidates(); return o; }
 function makeCandidates(){ const vals=[...new Set(allPriceValues($('ocrText').value).map(v=>fmt(v)))]; $('candidates').innerHTML=vals.map(v=>`<button type="button" class="pill" onclick="fillNext('${v}')">${v}</button>`).join(''); }
 let fillOrder=['current','sma','up2','low2','up3','low3'], fillIdx=0; window.fillNext=(v)=>{ setVal(fillOrder[fillIdx%fillOrder.length],parseFloat(v)); fillIdx++; };
 $('imageInput').addEventListener('change',()=>{const f=$('imageInput').files[0]; if(!f)return; const url=URL.createObjectURL(f); $('preview').src=url; $('confirmArea').classList.remove('hide');});
 $('ocrBtn').addEventListener('click',async()=>{ const f=$('imageInput').files[0]; if(!f){$('status').textContent='先に画像を選んでください。';return;} try{
   $('status').textContent='OCR実行中... 全体画像を読んでいます';
   const fullRes=await Tesseract.recognize(f,'eng',{logger:m=>{ if(m.status) $('status').textContent=`全体OCR: ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`; }});
-  $('status').textContent='OCR実行中... 凡例だけを読んでいます';
+  $('status').textContent='OCR実行中... BB凡例だけを読んでいます';
   const cropBlob=await makeLegendCropBlob(f);
   const legendRes=await Tesseract.recognize(cropBlob,'eng',{logger:m=>{ if(m.status) $('status').textContent=`凡例OCR: ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`; }});
-  const fullText=fullRes.data.text||'';
-  const legendText=legendRes.data.text||'';
+  const fullText=fullRes.data.text||''; const legendText=legendRes.data.text||'';
   $('ocrText').value='--- 全体OCR ---\n'+fullText.trim()+'\n\n--- BB凡例クロップ ---\n'+legendText.trim();
-  $('status').textContent='OCR完了。認識値を確認してください。';
-  applyParsed();
+  $('status').textContent='OCR完了。認識値を確認してください。'; applyParsed();
 }catch(e){$('status').textContent='OCRエラー: '+(e&&e.message?e.message:e);}});
 $('extractBtn').addEventListener('click',makeCandidates); $('applyBtn').addEventListener('click',applyParsed);
-function calcRealTime(mu,sigma,N,k,side){ // solve x = newMu +/- k*newSigma replacing latest current with x; population variance
-  const c=n($('current').value); if(c==null) return null;
-  const S=N*mu, SS=N*(sigma*sigma+mu*mu); const A=S-c, B=SS-c*c;
-  // equation x = m + side*k*sd, m=(A+x)/N, sd^2=(B+x^2)/N-m^2
-  // numeric robust bisection
-  const f=x=>{ const m=(A+x)/N; const varr=Math.max(0,(B+x*x)/N-m*m); return x-(m+side*k*Math.sqrt(varr)); };
-  let lo=side>0?mu:mu-50, hi=side>0?mu+50:mu;
-  if(side>0){while(f(hi)<0) hi+=50; while(f(lo)>0) lo-=50;} else {while(f(lo)>0) lo-=50; while(f(hi)<0) hi+=50;}
-  for(let i=0;i<100;i++){const mid=(lo+hi)/2; const fm=f(mid); if(side>0){ if(fm>0) hi=mid; else lo=mid;} else { if(fm>0) lo=mid; else hi=mid; }} return (lo+hi)/2;
-}
-function catchUp(mu,sigma,N,k,side){ // minimize extreme H/L such that extreme = band(close), replacing latest with close<=H or close>=L. tangent condition numeric search over close.
-  const c=n($('current').value); if(c==null) return null; const S=N*mu, SS=N*(sigma*sigma+mu*mu); const A=S-c, B=SS-c*c;
-  function band(close){ const m=(A+close)/N; const varr=Math.max(0,(B+close*close)/N-m*m); return m+side*k*Math.sqrt(varr); }
-  // find extremum of band(close) for allowed close on opposite side. For high touch side=+1, minimal High is min band(close). For low touch, maximal/nearest Low is max band(close).
-  let center=mu; let lo=mu-80, hi=mu+80;
-  // ternary: side + => minimize, side - => maximize
-  for(let i=0;i<140;i++){ const m1=lo+(hi-lo)/3, m2=hi-(hi-lo)/3; const b1=band(m1), b2=band(m2); if(side>0){ if(b1<b2) hi=m2; else lo=m1; } else { if(b1>b2) hi=m2; else lo=m1; }}
-  const close=(lo+hi)/2; return {price:band(close), close};
-}
+function calcRealTime(mu,sigma,N,k,side){ const c=n($('current').value); if(c==null) return null; const S=N*mu, SS=N*(sigma*sigma+mu*mu); const A=S-c, B=SS-c*c; const f=x=>{ const m=(A+x)/N; const varr=Math.max(0,(B+x*x)/N-m*m); return x-(m+side*k*Math.sqrt(varr)); }; let lo=side>0?mu:mu-50, hi=side>0?mu+50:mu; if(side>0){while(f(hi)<0) hi+=50; while(f(lo)>0) lo-=50;} else {while(f(lo)>0) lo-=50; while(f(hi)<0) hi+=50;} for(let i=0;i<100;i++){const mid=(lo+hi)/2; const fm=f(mid); if(side>0){ if(fm>0) hi=mid; else lo=mid;} else { if(fm>0) lo=mid; else hi=mid; }} return (lo+hi)/2; }
+function catchUp(mu,sigma,N,k,side){ const c=n($('current').value); if(c==null) return null; const S=N*mu, SS=N*(sigma*sigma+mu*mu); const A=S-c, B=SS-c*c; function band(close){ const m=(A+close)/N; const varr=Math.max(0,(B+close*close)/N-m*m); return m+side*k*Math.sqrt(varr); } let lo=mu-80, hi=mu+80; for(let i=0;i<140;i++){ const m1=lo+(hi-lo)/3, m2=hi-(hi-lo)/3; const b1=band(m1), b2=band(m2); if(side>0){ if(b1<b2) hi=m2; else lo=m1; } else { if(b1>b2) hi=m2; else lo=m1; }} const close=(lo+hi)/2; return {price:band(close), close}; }
 $('calcBtn').addEventListener('click',()=>{ const N=n($('period').value)||21, mu=n($('sma').value); const k=parseFloat($('sigmaSelect').value)||2; if(mu==null){alert('SMAを入力してください');return;} let up=n(k===2?$('up2').value:$('up3').value), low=n(k===2?$('low2').value:$('low3').value); if(up==null||low==null){alert('選択したσの上下バンドを入力してください');return;} const sigma=(up-low)/(2*k); const rtUp=calcRealTime(mu,sigma,N,k,1), rtLow=calcRealTime(mu,sigma,N,k,-1); const cu=catchUp(mu,sigma,N,k,1), cl=catchUp(mu,sigma,N,k,-1); const rows=[['① リアルタイム +'+k+'σ タッチ',rtUp,'現在値が上昇し、価格 = +'+k+'σ(価格) になる値。'],['① リアルタイム -'+k+'σ タッチ',rtLow,'現在値が下落し、価格 = -'+k+'σ(価格) になる値。'],['② 高値追いつき +'+k+'σ タッチ',cu.price,'最低高値：'+fmt(cu.price)+' / 必要終値：'+fmt(cu.close)],['② 安値追いつき -'+k+'σ タッチ',cl.price,'最高安値：'+fmt(cl.price)+' / 必要終値：'+fmt(cl.close)]]; $('resultList').innerHTML=rows.map(r=>`<div class="result"><div class="title">${r[0]}</div><div class="num">${fmt(r[1])}</div><div class="small">${r[2]}</div></div>`).join(''); $('note').textContent=`推定σ：${fmt(sigma)} / 最新終値として現在値を1本分だけ置換して計算。`; $('results').classList.remove('hide');});
 $('saveBtn').addEventListener('click',()=>{const data={}; ['period','sigmaSelect',...ids,'up3','low3'].forEach(id=>data[id]=$(id).value); localStorage.setItem('bbtouch',JSON.stringify(data)); $('status').textContent='保存しました。';});
 $('clearBtn').addEventListener('click',()=>{ids.concat(['up3','low3']).forEach(id=>$(id).value='');});
