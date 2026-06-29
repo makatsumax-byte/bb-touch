@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>BB Touch v2</title>
+<title>BB Touch v2.1.0</title>
 <meta name="theme-color" content="#0b1020" />
 <style>
 :root{--bg:#070b16;--panel:#11182a;--panel2:#0d1424;--line:#263657;--text:#eef4ff;--muted:#aab6cf;--accent:#42d1ff;--accent2:#83f0ae;--warn:#ffd166;--bad:#ff6b6b;--ok:#78e08f;--input:#0b1222}*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#07101f,#080b14 65%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px}.wrap{max-width:760px;margin:0 auto;padding:16px 14px 36px}.hero{padding:16px 0 12px}.title{font-size:34px;font-weight:900;letter-spacing:.2px}.sub{color:var(--muted);line-height:1.5;margin-top:6px}.card{background:rgba(17,24,42,.96);border:1px solid var(--line);border-radius:22px;padding:16px;margin:14px 0;box-shadow:0 12px 28px rgba(0,0,0,.25)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:520px){.grid{grid-template-columns:1fr}}label{display:block;color:var(--muted);font-weight:700;margin:8px 0 6px}input,select,textarea{width:100%;font-size:24px;color:var(--text);background:var(--input);border:1px solid #314165;border-radius:16px;padding:14px 16px;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(66,209,255,.16)}select{appearance:none}.row{display:flex;gap:10px;align-items:center}.btn{width:100%;border:0;border-radius:18px;padding:17px 18px;font-size:22px;font-weight:900;color:#05101a;background:linear-gradient(90deg,#6bd8ff,#8bf2aa);margin-top:14px}.btn.secondary{background:#0c1324;color:var(--text);border:1px solid #314165;font-size:16px}.btn.small{font-size:16px;padding:11px 12px;border-radius:14px;margin-top:8px}.btn.warn{background:linear-gradient(90deg,#ffd166,#ffad66)}.results{display:grid;gap:12px}.result{border:1px solid #21304f;border-radius:18px;padding:15px;background:#0d1424}.result.hot{border-color:var(--accent);box-shadow:0 0 0 1px rgba(66,209,255,.25) inset}.rlabel{color:var(--muted);font-weight:800}.rvalue{font-size:44px;line-height:1.05;font-weight:950;margin:8px 0}.note{color:var(--muted);line-height:1.45}.tiny{font-size:13px;color:var(--muted);line-height:1.45}.pill{display:inline-flex;gap:6px;align-items:center;border:1px solid #314165;background:#0b1222;color:var(--muted);border-radius:999px;padding:6px 10px;font-size:13px;margin:4px 4px 0 0}.hidden{display:none!important}.ocrBox{border:1px dashed #3a4b72;border-radius:18px;padding:14px;background:#0b1222}.status{padding:12px;border-radius:14px;background:#0b1222;border:1px solid #25385d;color:var(--muted);margin-top:10px;white-space:pre-wrap}.preview{width:100%;max-height:260px;object-fit:contain;border-radius:14px;background:#050914;border:1px solid #243352;margin-top:10px}.raw{height:120px;font-size:13px;line-height:1.35}.chips{margin-top:8px}.chip{display:inline-block;padding:8px 10px;margin:4px;border:1px solid #314165;border-radius:12px;background:#0b1222;color:var(--text);font-weight:700}.chip:active{transform:scale(.98)}.sectionTitle{font-size:21px;font-weight:900;margin-bottom:8px}.footer{padding:10px 2px;color:var(--muted);font-size:12px;line-height:1.5}.danger{color:var(--bad)}.ok{color:var(--ok)}.twoBtn{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}</style>
@@ -11,13 +11,13 @@
 <body>
 <div class="wrap">
   <div class="hero">
-    <div class="title">📈 BB Touch <span style="font-size:16px;color:#8aa0c8">v2</span></div>
-    <div class="sub">手入力＋画像OCR候補入力。画像はGitHubへ保存しない設計。OCRはブラウザ内で実行します。</div>
+    <div class="title">📈 BB Touch <span style="font-size:16px;color:#8aa0c8">v2.1.0</span></div>
+    <div class="sub">手入力＋画像OCR自動入力。画像はGitHubへ保存しない設計。OCRはブラウザ内で実行します。</div>
   </div>
 
   <div class="card">
     <div class="sectionTitle">画像から読む（v2）</div>
-    <div class="tiny">Tesseract.jsを読み込み、選択した画像をこの画面内でOCRします。OCR結果は候補として入力欄に反映できます。誤読は必ず目視確認して修正してください。</div>
+    <div class="tiny">Tesseract.jsを読み込み、選択した画像をこの画面内でOCRします。OCR結果から現在値・SMA・±σをできる限り自動入力します。誤読は必ず目視確認して修正してください。</div>
     <div class="ocrBox" style="margin-top:12px">
       <input id="imageInput" type="file" accept="image/*" style="font-size:16px" />
       <img id="preview" class="preview hidden" alt="preview" />
@@ -26,8 +26,10 @@
       <label for="ocrText">OCRテキスト</label>
       <textarea id="ocrText" class="raw" placeholder="OCR結果がここに出ます。必要なら手で修正できます。"></textarea>
       <button class="btn secondary small" id="extractBtn" type="button">OCRテキストから数値候補を抽出</button>
+      <button class="btn warn small" id="autoFillBtn" type="button">OCRから自動入力して計算</button>
       <div id="chips" class="chips"></div>
-      <div class="tiny" style="margin-top:8px">候補ボタンを押すと、次の空欄に順番に入ります。順番は「現在値 → SMA → +2σ → -2σ → +3σ → -3σ」です。</div>
+      <div id="autoStatus" class="status hidden"></div>
+      <div class="tiny" style="margin-top:8px">v2.1では自動入力を優先します。候補ボタンを押すと、次の空欄に順番に入ります。</div>
     </div>
   </div>
 
@@ -57,7 +59,7 @@
   </div>
 
   <div class="footer">
-    BB Touch v2.0 / 画像はこのページ内で読み取り、GitHubリポジトリへアップロードしません。外部OCR APIは使っていません。Tesseract.js本体はCDNから読み込まれます。
+    BB Touch v2.1.0 / 画像はこのページ内で読み取り、GitHubリポジトリへアップロードしません。外部OCR APIは使っていません。Tesseract.js本体はCDNから読み込まれます。
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -144,12 +146,82 @@
   function clear(){['price','mean','upper2','lower2','upper3','lower3'].forEach(id=>$(id).value=''); $('results').innerHTML=''; $('meta').textContent=''; setErr('');}
   function nextEmpty(){for(const id of ['price','mean','upper2','lower2','upper3','lower3']){if(!$(id).value.trim()) return id;} return 'price';}
   function makeChips(nums){const box=$('chips'); box.innerHTML=''; nums.forEach(n=>{const b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=n; b.onclick=()=>{$(nextEmpty()).value=n;}; box.appendChild(b);});}
+  function extractRawNumbers(text){
+    return (text.match(/\d{1,3}(?:\.\d{2,5})/g)||[]).filter(x=>Number(x)>0);
+  }
   function extractNumbers(){
     const text=$('ocrText').value;
-    const nums=(text.match(/\d{1,3}(?:\.\d{2,5})/g)||[]).filter(x=>Number(x)>0);
+    const nums=extractRawNumbers(text);
     const unique=[...new Set(nums)]; makeChips(unique);
+    return unique;
   }
-  $('calcBtn').addEventListener('click',calculate); $('saveBtn').addEventListener('click',()=>{save(); alert('保存しました');}); $('clearBtn').addEventListener('click',clear); $('extractBtn').addEventListener('click',extractNumbers);
+  function nearly(a,b,tol){return Math.abs(a-b)<=tol;}
+  function normalizeText(t){return (t||'').replace(/[ＯO０]/g,'O').replace(/[ＣC]/g,'C').replace(/[ＨH]/g,'H').replace(/[ＬL]/g,'L').replace(/[：]/g,':');}
+  function parseOHLC(text){
+    const t=normalizeText(text);
+    const out={};
+    for(const k of ['O','H','L','C']){
+      const re=new RegExp(k+'\s*[:：]?\s*(\d{2,3}\.\d{2,5})','i');
+      const m=t.match(re); if(m) out[k]=m[1];
+    }
+    return out;
+  }
+  function cleanCandidates(nums, ohlc){
+    const used=new Set(Object.values(ohlc||{}));
+    return nums.filter(x=>{
+      const n=Number(x);
+      if(used.has(x)) return false;
+      if(!Number.isFinite(n)) return false;
+      if(n<50 || n>300) return false;
+      if(/\.0{2,5}$/.test(x)) return false; // 右軸の 210.000 などを除外
+      return true;
+    });
+  }
+  function autoFillFromOCR(){
+    const text=$('ocrText').value;
+    const nums=extractNumbers();
+    const ohlc=parseOHLC(text);
+    const cleaned=cleanCandidates(nums, ohlc).map(Number);
+    const notes=[];
+
+    // 1) 現在値はC:を最優先
+    const close = ohlc.C ? Number(ohlc.C) : (Number.isFinite(Number($('price').value)) ? Number($('price').value) : NaN);
+    if(Number.isFinite(close)){ $('price').value=fmt(close); notes.push('現在値=Cを採用'); }
+
+    // 2) OCR本文の出現順を重視。OHLC後に出る最初の値をSMA候補にする。
+    let mean = NaN, upper2 = NaN, lower2 = NaN, upper3 = NaN, lower3 = NaN;
+    const seq=cleaned.filter((v,i,a)=>a.indexOf(v)===i);
+    if(seq.length){
+      // currentに近すぎる値は高値安値ラベルの可能性があるので、Cから0.15円以内は除外してSMA候補を探す
+      const seqForMean = Number.isFinite(close) ? seq.filter(v=>Math.abs(v-close)>0.15) : seq.slice();
+      mean = seqForMean.length ? seqForMean[0] : seq[0];
+      $('mean').value=fmt(mean); notes.push('SMA=OCR順から推定');
+
+      const afterMean = seq.slice(seq.indexOf(mean)+1);
+      const ups = afterMean.filter(v=>v>mean).sort((a,b)=>a-b);
+      const downs = afterMean.filter(v=>v<mean).sort((a,b)=>b-a);
+      if(ups.length){ upper2=ups[0]; $('upper2').value=fmt(upper2); notes.push('+2σ=OCR順/近接値から推定'); }
+      if(Number.isFinite(upper2)){
+        const targetLower=2*mean-upper2;
+        const lowerHit=downs.find(v=>Math.abs(v-targetLower)<=0.08);
+        lower2 = lowerHit ?? targetLower;
+        $('lower2').value=fmt(lower2);
+        notes.push(lowerHit ? '-2σ=OCR値から採用' : '-2σ=SMAと+2σから対称推定');
+        const width=upper2-mean;
+        const u3cand=afterMean.filter(v=>v>upper2).sort((a,b)=>a-b)[0];
+        const l3target=mean-width*1.5;
+        const l3cand=afterMean.filter(v=>v<lower2).sort((a,b)=>Math.abs(a-l3target)-Math.abs(b-l3target))[0];
+        if(u3cand && (u3cand-mean) > width*1.15){ upper3=u3cand; $('upper3').value=fmt(upper3); notes.push('+3σ候補も入力'); }
+        if(l3cand && Math.abs(l3cand-l3target)<0.25){ lower3=l3cand; $('lower3').value=fmt(lower3); notes.push('-3σ候補も入力'); }
+      }
+    }
+
+    const ok=['price','mean','upper2','lower2'].every(id=>$(id).value.trim());
+    $('autoStatus').classList.remove('hidden');
+    $('autoStatus').textContent = (ok?'自動入力しました。必ず目視確認してください。\n':'自動入力できない項目があります。候補から手入力してください。\n') + notes.join(' / ');
+    if(ok) calculate();
+  }
+  $('calcBtn').addEventListener('click',calculate); $('saveBtn').addEventListener('click',()=>{save(); alert('保存しました');}); $('clearBtn').addEventListener('click',clear); $('extractBtn').addEventListener('click',extractNumbers); $('autoFillBtn').addEventListener('click',autoFillFromOCR);
   $('imageInput').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0]; if(!f) return; const url=URL.createObjectURL(f); $('preview').src=url; $('preview').classList.remove('hidden');});
   $('runOcrBtn').addEventListener('click',async()=>{
     const f=$('imageInput').files&&$('imageInput').files[0]; if(!f){alert('画像を選択してください');return;}
@@ -157,7 +229,7 @@
     $('ocrStatus').classList.remove('hidden'); $('ocrStatus').textContent='OCR準備中…';
     try{
       const res=await Tesseract.recognize(f,'eng',{logger:m=>{if(m.status){$('ocrStatus').textContent=`OCR中: ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`;}}});
-      $('ocrText').value=res.data.text||''; $('ocrStatus').textContent='OCR完了。数値候補を抽出してください。'; extractNumbers();
+      $('ocrText').value=res.data.text||''; $('ocrStatus').textContent='OCR完了。自動入力を試行しました。'; extractNumbers(); autoFillFromOCR();
     }catch(err){$('ocrStatus').textContent='OCR失敗: '+(err&&err.message?err.message:String(err));}
   });
   load();
