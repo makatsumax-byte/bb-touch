@@ -10,7 +10,7 @@
 </style>
 </head>
 <body><div class="wrap">
-<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v2.10.0</span></h1>
+<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v2.12.0</span></h1>
 <p class="sub">楽天FXスクショのOCR値を確認してから、①②を計算します。画像と入力値は外部送信しません。</p>
 
 <div class="card">
@@ -61,7 +61,7 @@
   <button id="applyBtn" class="btnWarn">OCRから入力欄に反映</button>
   <div id="candidates"></div>
 </div>
-<div class="footer">BB Touch v2.10.0</div>
+<div class="footer">BB Touch v2.12.0</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
@@ -73,69 +73,114 @@ function setVal(id,val){ if(val!=null && Number.isFinite(val)) $(id).value=fmt(v
 function setRec(id,val){ const el=$(id); if(val==null||!Number.isFinite(val)){el.textContent='未認識';el.className='v miss'}else{el.textContent=fmt(val);el.className='v'} }
 function normalizeText(t){return (t||'').replace(/[，、]/g,'.').replace(/[−–—ー]/g,'-').replace(/[０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0));}
 function priceNums(s){
-  const re=/(?<!\d)(?:1\d{2}|2\d{2})(?:[\.,]\d{3})(?!\d)/g;
+  // 100〜299.xxx の価格だけを拾う。カンマ小数も許容。
+  const re=/(?:1\d{2}|2\d{2})[\.,]\d{3}/g;
   return [...String(s).matchAll(re)].map(m=>({v:parseFloat(m[0].replace(',','.')), i:m.index, raw:m[0]}));
 }
 function allPriceValues(t){return priceNums(t).map(o=>o.v)}
-function sanePrice(v){return v>100 && v<300}
-function rejectAxis(v,sma,span){ if(sma==null||span==null) return false; return Math.abs(v-sma)>span*1.75; }
-function segmentAfterBracket(text, bracket){
+function sanePrice(v){return Number.isFinite(v) && v>100 && v<300}
+function regexIndex(t,re){ const m=re.exec(t); return m?m.index:-1; }
+function segmentAfterRegex(text,re){
   const t=normalizeText(text);
-  const idx=t.indexOf(bracket);
-  if(idx<0) return '';
-  const rest=t.slice(idx);
-  const nexts=['[2.0]','[3.0]','[4.0]','[5]','[25]','[200]'].filter(b=>b!==bracket)
-    .map(b=>rest.indexOf(b)).filter(i=>i>0);
-  const end=nexts.length?Math.min(...nexts):Math.min(rest.length, 120);
+  re.lastIndex=0;
+  const m=re.exec(t);
+  if(!m) return '';
+  const start=m.index + m[0].length;
+  const rest=t.slice(start);
+  // 次のインジケーター行までで切る。右軸目盛り混入を避けるため最大80文字。
+  const nextRe=/(\[\s*(?:2|3|4)\s*[\.,]\s*0\s*\]|\[\s*(?:5|21|25|200)\s*\]|σ\s*[ABC]|[o0]?[ABC]\s*\[|期間[ACH])/i;
+  const nm=nextRe.exec(rest);
+  const end=nm?nm.index:Math.min(rest.length,80);
   return rest.slice(0,end);
 }
-function valueAfterBracket(text, bracket){
-  const seg=segmentAfterBracket(text, bracket);
+function firstPriceAfter(text,re){
+  const seg=segmentAfterRegex(text,re);
   const nums=priceNums(seg).map(o=>o.v).filter(sanePrice);
-  if(!nums.length) return null;
-  return nums[0];
+  return nums.length?nums[0]:null;
 }
-function bandPairFromSegment(text, bracket, sma){
-  const seg=segmentAfterBracket(text, bracket);
+function pairAfter(text,re,sma){
+  const seg=segmentAfterRegex(text,re);
   let nums=priceNums(seg).map(o=>o.v).filter(sanePrice);
-  if(!nums.length) return {up:null, low:null};
-  // Remove obvious right-axis scale labels. For a BB pair, upper must be above SMA and lower below SMA.
+  // 右軸目盛りは、凡例クロップ側では基本混ざらないが、混ざっても最初の2つだけ採用。
+  let up=nums[0]??null;
+  let low=nums[1]??null;
   if(sma!=null){
-    const upperCandidates=nums.filter(v=>v>sma);
-    const lowerCandidates=nums.filter(v=>v<sma);
-    const up=upperCandidates.length?upperCandidates[0]:nums[0];
-    let low=lowerCandidates.length?lowerCandidates[0]:null;
-    // If OCR missed the lower band, estimate symmetrically from SMA and upper band.
-    if(low==null && up!=null) low=2*sma-up;
-    return {up, low};
+    // 2つ拾えた場合は、SMAより上・下になるように補正。
+    const above=nums.filter(v=>v>sma);
+    const below=nums.filter(v=>v<sma);
+    if(above.length) up=above[0];
+    if(below.length) low=below[0];
+    // 下側がOCRで抜けた場合は対称推定。
+    if(up!=null && low==null) low=2*sma-up;
+    // 上側が抜けて下側だけある場合も対称推定。
+    if(up==null && low!=null) up=2*sma-low;
   }
-  return {up:nums[0], low:nums[1]??null};
+  if(up!=null && low!=null && up<low){ const tmp=up; up=low; low=tmp; }
+  return {up,low};
 }
-function parseRakuten(text){
+function parseCurrentFromFull(text){
   const t=normalizeText(text);
-  const out={current:null,sma:null,up2:null,low2:null,up3:null,low3:null};
   const closes=[...t.matchAll(/C\s*[:：]?\s*((?:1\d{2}|2\d{2})[\.,]\d{3})/gi)].map(m=>parseFloat(m[1].replace(',','.')));
-  if(closes.length) out.current=closes[closes.length-1];
-  if(out.current==null){
-    const cur=[...t.matchAll(/現在値[^0-9]*((?:1\d{2}|2\d{2})[\.,]\d{3})/g)].map(m=>parseFloat(m[1].replace(',','.')));
-    if(cur.length) out.current=cur[0];
-  }
-  // Strictly take the first price inside the [21] segment only. Do not read right-axis labels.
-  out.sma=valueAfterBracket(t,'[21]');
-  const p2=bandPairFromSegment(t,'[2.0]',out.sma);
+  if(closes.length) return closes[closes.length-1];
+  const vals=[...t.matchAll(/現在値[^0-9]*((?:1\d{2}|2\d{2})[\.,]\d{3})/g)].map(m=>parseFloat(m[1].replace(',','.')));
+  return vals.length?vals[0]:null;
+}
+function parseBandsFromLegend(text){
+  const t=normalizeText(text);
+  const out={sma:null,up2:null,low2:null,up3:null,low3:null};
+  // 楽天FX凡例用：基準線[21]、σA[2.0]、σB[3.0] を優先。
+  out.sma = firstPriceAfter(t,/\[\s*21\s*\]/i);
+  if(out.sma==null) out.sma = firstPriceAfter(t,/基準線/i);
+  const p2 = pairAfter(t,/\[\s*2\s*[\.,]\s*0\s*\]/i,out.sma);
   out.up2=p2.up; out.low2=p2.low;
-  const p3=bandPairFromSegment(t,'[3.0]',out.sma);
+  const p3 = pairAfter(t,/\[\s*3\s*[\.,]\s*0\s*\]/i,out.sma);
   out.up3=p3.up; out.low3=p3.low;
-  if(out.up2!=null && out.low2!=null && out.up2<out.low2){ const tmp=out.up2; out.up2=out.low2; out.low2=tmp; }
-  if(out.up3!=null && out.low3!=null && out.up3<out.low3){ const tmp=out.up3; out.up3=out.low3; out.low3=tmp; }
   return out;
 }
+function parseRakuten(fullText, legendText){
+  const out={current:null,sma:null,up2:null,low2:null,up3:null,low3:null};
+  out.current=parseCurrentFromFull(fullText||legendText||'');
+  const bands=parseBandsFromLegend(legendText||fullText||'');
+  Object.assign(out,bands);
+  return out;
+}
+function loadImageFromFile(file){
+  return new Promise((resolve,reject)=>{ const img=new Image(); img.onload=()=>resolve(img); img.onerror=reject; img.src=URL.createObjectURL(file); });
+}
+async function makeLegendCropBlob(file){
+  const img=await loadImageFromFile(file);
+  const W=img.naturalWidth, H=img.naturalHeight;
+  // 楽天FXの凡例は左上のチャート内に固定表示されるので、左側だけをOCRする。
+  // 右軸目盛りを物理的に切り落とすのが狙い。
+  const sx=0;
+  const sy=Math.round(H*0.19);
+  const sw=Math.round(W*0.46);
+  const sh=Math.round(H*0.28);
+  const canvas=document.createElement('canvas');
+  canvas.width=sw*2; canvas.height=sh*2;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(img,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
+  return await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+}
 function updateRecognized(o){ setRec('rCurrent',o.current); setRec('rSma',o.sma); setRec('rUp2',o.up2); setRec('rLow2',o.low2); setRec('rUp3',o.up3); setRec('rLow3',o.low3); }
-function applyParsed(){ const o=parseRakuten($('ocrText').value); setVal('current',o.current); setVal('sma',o.sma); setVal('up2',o.up2); setVal('low2',o.low2); setVal('up3',o.up3); setVal('low3',o.low3); updateRecognized(o); makeCandidates(); return o; }
+function applyParsed(){ const txt=$('ocrText').value; const parts=txt.split('--- BB凡例クロップ ---'); const full=parts[0]||txt; const legend=parts[1]||txt; const o=parseRakuten(full,legend); setVal('current',o.current); setVal('sma',o.sma); setVal('up2',o.up2); setVal('low2',o.low2); setVal('up3',o.up3); setVal('low3',o.low3); updateRecognized(o); makeCandidates(); return o; }
 function makeCandidates(){ const vals=[...new Set(allPriceValues($('ocrText').value).map(v=>fmt(v)))]; $('candidates').innerHTML=vals.map(v=>`<button type="button" class="pill" onclick="fillNext('${v}')">${v}</button>`).join(''); }
 let fillOrder=['current','sma','up2','low2','up3','low3'], fillIdx=0; window.fillNext=(v)=>{ setVal(fillOrder[fillIdx%fillOrder.length],parseFloat(v)); fillIdx++; };
 $('imageInput').addEventListener('change',()=>{const f=$('imageInput').files[0]; if(!f)return; const url=URL.createObjectURL(f); $('preview').src=url; $('confirmArea').classList.remove('hide');});
-$('ocrBtn').addEventListener('click',async()=>{ const f=$('imageInput').files[0]; if(!f){$('status').textContent='先に画像を選んでください。';return;} try{$('status').textContent='OCR実行中...'; const res=await Tesseract.recognize(f,'eng',{logger:m=>{ if(m.status) $('status').textContent=`OCR: ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`; }}); $('ocrText').value=res.data.text||''; $('status').textContent='OCR完了。認識値を確認してください。'; applyParsed();}catch(e){$('status').textContent='OCRエラー: '+(e&&e.message?e.message:e);}});
+$('ocrBtn').addEventListener('click',async()=>{ const f=$('imageInput').files[0]; if(!f){$('status').textContent='先に画像を選んでください。';return;} try{
+  $('status').textContent='OCR実行中... 全体画像を読んでいます';
+  const fullRes=await Tesseract.recognize(f,'eng',{logger:m=>{ if(m.status) $('status').textContent=`全体OCR: ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`; }});
+  $('status').textContent='OCR実行中... 凡例だけを読んでいます';
+  const cropBlob=await makeLegendCropBlob(f);
+  const legendRes=await Tesseract.recognize(cropBlob,'eng',{logger:m=>{ if(m.status) $('status').textContent=`凡例OCR: ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`; }});
+  const fullText=fullRes.data.text||'';
+  const legendText=legendRes.data.text||'';
+  $('ocrText').value='--- 全体OCR ---\n'+fullText.trim()+'\n\n--- BB凡例クロップ ---\n'+legendText.trim();
+  $('status').textContent='OCR完了。認識値を確認してください。';
+  applyParsed();
+}catch(e){$('status').textContent='OCRエラー: '+(e&&e.message?e.message:e);}});
 $('extractBtn').addEventListener('click',makeCandidates); $('applyBtn').addEventListener('click',applyParsed);
 function calcRealTime(mu,sigma,N,k,side){ // solve x = newMu +/- k*newSigma replacing latest current with x; population variance
   const c=n($('current').value); if(c==null) return null;
