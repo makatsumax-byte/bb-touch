@@ -1,65 +1,201 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>BB Touch v2.4.0</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BB Touch v2.5.0</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
-:root{--bg:#071124;--card:#101a31;--card2:#0b1428;--line:#26385f;--text:#edf4ff;--muted:#aab6cf;--accent:#27c8ff;--good:#80f0bb;--warn:#ffd36b;--bad:#ff8e8e}*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#071124,#0a1225);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}header{position:sticky;top:0;background:rgba(7,17,36,.92);backdrop-filter:blur(12px);z-index:5;border-bottom:1px solid var(--line);padding:14px 18px}h1{font-size:24px;margin:0}small{color:var(--muted)}main{padding:16px;max-width:980px;margin:auto}.card{background:rgba(16,26,49,.95);border:1px solid var(--line);border-radius:20px;padding:16px;margin:0 0 16px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:760px){.grid{grid-template-columns:1fr}}label{display:block;color:var(--muted);font-size:14px;margin:10px 0 6px}input,select,button,textarea{font:inherit}input,select,textarea{width:100%;padding:14px 15px;border-radius:14px;border:1px solid #31456f;background:#091329;color:var(--text);outline:none}button{border:0;border-radius:16px;padding:15px 18px;font-weight:800;background:linear-gradient(90deg,#6fd6ff,#88efb5);color:#06111e;width:100%;margin-top:12px}.ghost{background:#0b1428;color:var(--text);border:1px solid var(--line)}.previewWrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.9fr);gap:12px;align-items:start}@media(max-width:760px){.previewWrap{grid-template-columns:1fr}.stickyCheck{position:sticky;top:62px;z-index:4}}img{max-width:100%;border-radius:14px;border:1px solid var(--line);background:#000}.slot{display:grid;grid-template-columns:92px 1fr;gap:8px;align-items:center;margin:7px 0}.slot b{color:var(--muted);font-size:13px}.slot input{padding:10px 12px;border-radius:12px}.pillbox{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.pill{border:1px solid #365384;background:#0b1428;color:var(--text);border-radius:12px;padding:8px 10px;font-weight:700}.pill.excluded{opacity:.42}.note{color:var(--muted);line-height:1.55}.warn{color:var(--warn)}.bad{color:var(--bad)}.good{color:var(--good)}.result{border:1px solid #22c5ff;border-radius:18px;padding:16px;margin:12px 0;background:#0b1428}.result .title{color:var(--muted);font-size:14px}.result .num{font-size:40px;font-weight:900;letter-spacing:.02em;margin:6px 0}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}.ocrText{max-height:230px;overflow:auto;background:#071022;border:1px solid var(--line);border-radius:14px;padding:12px;color:#dbe7ff}.mini{font-size:12px;color:var(--muted)}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.debug{display:none}.showDebug .debug{display:block}</style>
+:root{--bg:#071124;--card:#101a31;--card2:#0b1428;--line:#26385f;--text:#edf4ff;--muted:#aab6cf;--accent:#65d7ff;--good:#83f0bd;--warn:#ffd36b;--bad:#ff8e8e;--shadow:0 14px 40px rgba(0,0,0,.28)}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#071124,#0a1225);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif} header{position:sticky;top:0;z-index:10;background:rgba(7,17,36,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:13px 16px} h1{font-size:22px;margin:0} .ver{font-size:12px;color:var(--muted);margin-top:2px} main{padding:14px;max-width:1080px;margin:0 auto 40px}.card{background:rgba(16,26,49,.96);border:1px solid var(--line);border-radius:20px;padding:14px;margin:0 0 14px;box-shadow:var(--shadow)} .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.checkGrid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(265px,.95fr);gap:12px;align-items:start}@media(max-width:760px){.row,.checkGrid{grid-template-columns:1fr}.stickyBox{position:sticky;top:62px;z-index:9}}
+label{display:block;color:var(--muted);font-size:13px;margin:10px 0 6px} input,select,textarea,button{font:inherit} input,select,textarea{width:100%;padding:12px 13px;border-radius:14px;border:1px solid #31456f;background:#091329;color:var(--text);outline:none} input:focus,textarea:focus,select:focus{border-color:var(--accent)} button{border:0;border-radius:15px;padding:14px 16px;font-weight:800;background:linear-gradient(90deg,#68d7ff,#88efb5);color:#06111e;width:100%;margin-top:10px}.ghost{background:#0b1428;color:var(--text);border:1px solid var(--line)} .tiny{font-size:12px;color:var(--muted);line-height:1.55}.warn{color:var(--warn)}.bad{color:var(--bad)}.good{color:var(--good)}
+.preview{width:100%;max-height:430px;object-fit:contain;background:#000;border:1px solid var(--line);border-radius:14px;display:block}.hidden{display:none!important}.valuesBox{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:12px}.valuesBox h2{font-size:16px;margin:0 0 8px}.slot{display:grid;grid-template-columns:86px 1fr;gap:8px;align-items:center;margin:7px 0}.slot b{color:var(--muted);font-size:13px}.slot input{padding:10px 12px;border-radius:12px}.status{white-space:pre-wrap;background:#071225;border:1px solid var(--line);border-radius:14px;padding:10px;margin-top:10px;color:var(--muted);font-size:12px}.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.chip{border:1px solid var(--line);background:#0b1730;color:var(--text);border-radius:999px;padding:7px 10px;font-size:13px}.chip.badge{border-color:#64475b;color:#ffb6c1}.chip.goodbadge{border-color:#356553;color:#a8f7cd}.results{display:grid;gap:10px}.res{background:#0b1428;border:1px solid var(--line);border-radius:16px;padding:13px}.res.main{border-color:#3b6685;background:linear-gradient(180deg,#102542,#0b1428)}.name{color:var(--muted);font-size:13px}.value{font-size:28px;font-weight:900;letter-spacing:.2px;margin-top:3px}.detail{font-size:12px;color:var(--muted);line-height:1.55;margin-top:4px}.ocrArea{min-height:120px;font-size:12px;line-height:1.35}.sectionTitle{font-weight:800;margin-bottom:8px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:99;padding:18px;display:flex;align-items:center;justify-content:center}.modal img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px}.close{position:fixed;top:12px;right:12px;width:auto;background:#fff;color:#000;padding:9px 12px;border-radius:999px}.footer{font-size:11px;color:var(--muted);padding:0 4px 18px}
+</style>
 </head>
 <body>
-<header><h1>BB Touch <small>v2.4.0</small></h1><small>画像は外部送信しません。OCRはこのブラウザ内で実行します。</small></header>
+<header><h1>📈 BB Touch</h1><div class="ver">v2.5.0 / OCR確認レイアウト復元・数値抽出改善</div></header>
 <main>
   <section class="card">
-    <div class="grid">
-      <div>
-        <label>期間</label><input id="period" inputmode="numeric" value="21">
-      </div>
-      <div>
-        <label>σ倍率</label><select id="sigmaMult"><option value="2" selected>2σ</option><option value="3">3σ</option></select>
-      </div>
-    </div>
-    <label>チャート画像</label>
+    <div class="sectionTitle">画像OCR</div>
     <input id="imageInput" type="file" accept="image/*">
-    <button id="ocrBtn" class="ghost">画像OCRを実行</button>
-    <div id="status" class="note" style="margin-top:10px">画像を選んでOCRを実行してください。</div>
+    <button id="runOcrBtn" type="button">OCR実行</button>
+    <div id="ocrStatus" class="status hidden"></div>
+    <div class="tiny warn">画像はGitHubへアップロードしない。ブラウザ内でOCRする設計。OCRライブラリ自体はCDNから読み込む。</div>
   </section>
 
-  <section class="card">
-    <h2>画像とOCR認識値の確認</h2>
-    <div class="previewWrap">
-      <div><img id="preview" alt="preview" style="display:none"></div>
-      <div class="stickyCheck">
-        <div class="note">画像の表示値と下の認識値が合っているか確認。違う場合は直接修正してから「計算する」。</div>
-        <div class="slot"><b>現在値</b><input id="price" inputmode="decimal" placeholder="例 199.794"></div>
-        <div class="slot"><b>基準線/SMA</b><input id="sma" inputmode="decimal" placeholder="例 201.423"></div>
-        <div class="slot"><b>+2σ</b><input id="plus2" inputmode="decimal" placeholder="例 204.318"></div>
-        <div class="slot"><b>-2σ</b><input id="minus2" inputmode="decimal" placeholder="例 198.528"></div>
-        <div class="slot"><b>+3σ</b><input id="plus3" inputmode="decimal" placeholder="任意"></div>
-        <div class="slot"><b>-3σ</b><input id="minus3" inputmode="decimal" placeholder="任意"></div>
-        <button id="calcBtn">計算する</button>
-        <button id="clearBtn" class="ghost">クリア</button>
+  <section id="confirmCard" class="card hidden">
+    <div class="sectionTitle">画像とOCR認識値の確認</div>
+    <div class="checkGrid">
+      <div>
+        <img id="preview" class="preview" alt="preview">
+        <div class="tiny">画像タップで拡大。数字が読みにくい時は拡大して確認。</div>
+      </div>
+      <div class="valuesBox stickyBox">
+        <h2>OCR認識値</h2>
+        <div class="slot"><b>現在値</b><input id="price" inputmode="decimal" placeholder="例 199.527"></div>
+        <div class="slot"><b>基準線</b><input id="basis" inputmode="decimal" placeholder="例 201.410"></div>
+        <div class="slot"><b>+2σ</b><input id="upper2" inputmode="decimal" placeholder="例 204.337"></div>
+        <div class="slot"><b>-2σ</b><input id="lower2" inputmode="decimal" placeholder="例 198.484"></div>
+        <div class="slot"><b>+3σ</b><input id="upper3" inputmode="decimal" placeholder="任意"></div>
+        <div class="slot"><b>-3σ</b><input id="lower3" inputmode="decimal" placeholder="任意"></div>
+        <button id="calcBtn" type="button">計算する</button>
+        <button id="clearBtn" class="ghost" type="button">入力をクリア</button>
+        <div id="autoNote" class="status"></div>
       </div>
     </div>
+    <div class="sectionTitle" style="margin-top:12px">OCR数字候補</div>
+    <div id="chips" class="chips"></div>
+    <details style="margin-top:12px"><summary class="tiny">OCRテキストを見る</summary><textarea id="ocrText" class="ocrArea"></textarea></details>
   </section>
 
   <section class="card">
-    <h2>OCRテキスト</h2>
-    <div id="ocrText" class="ocrText mono">未実行</div>
-    <button id="extractBtn" class="ghost">OCRテキストから再抽出</button>
-    <h3>数値候補</h3>
-    <div id="candidates" class="pillbox"></div>
-    <p class="mini">候補をタップすると、現在値 → SMA → +2σ → -2σ → +3σ → -3σ の空欄に順番に入ります。</p>
+    <div class="sectionTitle">手入力 / 計算設定</div>
+    <div class="row">
+      <div><label>期間</label><input id="n" inputmode="numeric" value="21"></div>
+      <div><label>σ倍率</label><select id="k"><option value="2">2σ</option><option value="3">3σ</option></select></div>
+    </div>
+    <div class="row">
+      <div><label>現在値</label><input id="priceManual" inputmode="decimal" placeholder="上の現在値と同期"></div>
+      <div><label>基準線</label><input id="basisManual" inputmode="decimal" placeholder="上の基準線と同期"></div>
+    </div>
+    <div class="row">
+      <div><label>+2σ</label><input id="upper2Manual" inputmode="decimal"></div>
+      <div><label>-2σ</label><input id="lower2Manual" inputmode="decimal"></div>
+    </div>
+    <div class="row">
+      <div><label>+3σ</label><input id="upper3Manual" inputmode="decimal"></div>
+      <div><label>-3σ</label><input id="lower3Manual" inputmode="decimal"></div>
+    </div>
+    <label>標準偏差</label><select id="mode"><option value="sample">sample（TradingView系で多い）</option><option value="population">population</option></select>
+    <button id="calcBtn2" type="button">計算する</button>
+    <div class="tiny">上のOCR確認欄と手入力欄は同期する。数字が違えば手修正してから計算。</div>
   </section>
 
-  <section class="card">
-    <h2>結果</h2>
-    <div id="results" class="note">まだ計算していません。</div>
-  </section>
+  <section class="card"><div class="sectionTitle">結果</div><div id="results" class="results"><div class="tiny">数値を入れて「計算する」を押す。</div></div></section>
+  <div class="footer">BB Touch v2.5.0 / 入力データ・画像はGitHubへ保存されない。</div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<div id="modal" class="modal hidden"><button id="closeModal" class="close" type="button">閉じる</button><img id="modalImg" alt="zoom"></div>
 <script>
-const $=id=>document.getElementById(id);
-let imageDataUrl=null;
-const fields=['price','sma','plus2','minus2','plus3','minus3'];
-function num(v){ if(v==null) return NaN; const s=String(v).replace(/[，,]/g,'.').replace(/[^
+(function(){
+'use strict';
+const $ = (id)=>document.getElementById(id);
+const pairMap = {price:'priceManual', basis:'basisManual', upper2:'upper2Manual', lower2:'lower2Manual', upper3:'upper3Manual', lower3:'lower3Manual'};
+const revMap = Object.fromEntries(Object.entries(pairMap).map(([a,b])=>[b,a]));
+function fmt(x){ return Number.isFinite(x) ? (Math.round(x*1000)/1000).toFixed(3) : ''; }
+function parseNum(s){ if(s==null) return NaN; const t=String(s).replace(/[，,]/g,'.').replace(/[^0-9.\-]/g,''); const v=parseFloat(t); return Number.isFinite(v)?v:NaN; }
+function setVal(id,v){ if(!Number.isFinite(v)) return; $(id).value=fmt(v); if(pairMap[id]) $(pairMap[id]).value=fmt(v); if(revMap[id]) $(revMap[id]).value=fmt(v); }
+function syncOne(a,b){ $(a).addEventListener('input',()=>{$(b).value=$(a).value;}); $(b).addEventListener('input',()=>{$(a).value=$(b).value;}); }
+Object.entries(pairMap).forEach(([a,b])=>syncOne(a,b));
+
+function normText(t){ return String(t||'').replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/[，、]/g,'.').replace(/[−ー–—]/g,'-'); }
+function numsInLine(line){
+  const raw = normText(line).match(/[-+]?\d{1,3}(?:[.,]\d{1,5})?/g) || [];
+  return raw.map(x=>Number(String(x).replace(',','.'))).filter(v=>Number.isFinite(v) && v>=50 && v<=300 && !Number.isInteger(v));
+}
+function extractAllNumbers(text){
+  const arr=[]; const lines=normText(text).split(/\n+/);
+  lines.forEach((line,li)=>numsInLine(line).forEach(v=>arr.push({v,line,li})));
+  return arr;
+}
+function parseOhlc(lines){
+  const out={};
+  lines.forEach(line=>{
+    const s=normText(line);
+    const m=s.match(/(?:^|\s)([OHLC])\s*[:：]?\s*([0-9]{2,3}[.,][0-9]{2,5})/i);
+    if(m) out[m[1].toUpperCase()]=Number(m[2].replace(',','.'));
+  });
+  return out;
+}
+function firstNumAfterLabel(line){ const ns=numsInLine(line); if(!ns.length) return NaN; return ns[ns.length-1]; }
+function findLine(lines, pred){ return lines.find(l=>pred(normText(l))) || ''; }
+function isScaleLine(line){ const s=normText(line); return /^\s*\d{2,3}\.0{2,5}\s*$/.test(s); }
+function autoFill(text){
+  const lines=normText(text).split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  const ohlc=parseOhlc(lines);
+  const notes=[];
+  if(Number.isFinite(ohlc.C)){ setVal('price', ohlc.C); notes.push('現在値=C:を採用'); }
+  else {
+    const nowLine=findLine(lines,l=>/(現在|現在値|終値|close)/i.test(l));
+    const now=firstNumAfterLabel(nowLine); if(Number.isFinite(now)){setVal('price',now); notes.push('現在値=現在/Close行から採用');}
+  }
+  const basisLine=findLine(lines,l=>/(基準線|基準|middle|basis|sma)/i.test(l) && !/(200\s*ma|ma\s*200)/i.test(l));
+  const basis=firstNumAfterLabel(basisLine);
+  if(Number.isFinite(basis)){ setVal('basis',basis); notes.push('基準線=基準線/SMA行から採用'); }
+  const band2Line=findLine(lines,l=>/(σ\s*A|sigma\s*A|2\.0|2σ|σ2|２σ)/i.test(l));
+  const band3Line=findLine(lines,l=>/(σ\s*B|sigma\s*B|3\.0|3σ|σ3|３σ)/i.test(l));
+  const m=parseNum($('basis').value);
+  function fillBand(line, upId, lowId, label){
+    if(!line) return false;
+    let ns=numsInLine(line).filter(v=>Math.abs(v-2)>0.01 && Math.abs(v-3)>0.01 && Math.abs(v-21)>0.01);
+    ns=ns.filter(v=>!Number.isFinite(m) || Math.abs(v-m)>0.03);
+    if(ns.length>=2){
+      const hi=Math.max(...ns), lo=Math.min(...ns); setVal(upId,hi); setVal(lowId,lo); notes.push(label+'=同じ行の上下値を採用'); return true;
+    }
+    if(ns.length===1 && Number.isFinite(m)){
+      const v=ns[0]; if(v>m) setVal(upId,v); else setVal(lowId,v); notes.push(label+'=片側だけ採用'); return true;
+    }
+    return false;
+  }
+  fillBand(band2Line,'upper2','lower2','2σ');
+  fillBand(band3Line,'upper3','lower3','3σ');
+  // 対称推定
+  const b=parseNum($('basis').value), u2=parseNum($('upper2').value), l2=parseNum($('lower2').value), u3=parseNum($('upper3').value), l3=parseNum($('lower3').value);
+  if(Number.isFinite(b)&&Number.isFinite(u2)&&!Number.isFinite(l2)){setVal('lower2',2*b-u2);notes.push('-2σ=基準線と+2σから対称推定');}
+  if(Number.isFinite(b)&&Number.isFinite(l2)&&!Number.isFinite(u2)){setVal('upper2',2*b-l2);notes.push('+2σ=基準線と-2σから対称推定');}
+  if(Number.isFinite(b)&&Number.isFinite(u3)&&!Number.isFinite(l3)){setVal('lower3',2*b-u3);notes.push('-3σ=基準線と+3σから対称推定');}
+  if(Number.isFinite(b)&&Number.isFinite(l3)&&!Number.isFinite(u3)){setVal('upper3',2*b-l3);notes.push('+3σ=基準線と-3σから対称推定');}
+  // 候補チップ表示
+  const all=extractAllNumbers(text);
+  const used=new Set([ohlc.O,ohlc.H,ohlc.L,ohlc.C].filter(Number.isFinite).map(v=>fmt(v)));
+  $('chips').innerHTML = all.map(o=>{
+    const f=fmt(o.v); const cls=used.has(f)?'chip badge':'chip';
+    const title=used.has(f)?'OHLC候補（自動入力では現在値C以外は除外）':'数字候補';
+    return `<button type="button" class="${cls}" title="${title}" data-v="${f}">${f}</button>`;
+  }).join('') || '<span class="tiny bad">数字候補なし</span>';
+  $('chips').querySelectorAll('button[data-v]').forEach(btn=>btn.addEventListener('click',()=>{
+    const v=btn.dataset.v; const target=prompt('どの欄に入れる？ price / basis / upper2 / lower2 / upper3 / lower3', '');
+    if(target && $(target)) setVal(target, Number(v));
+  }));
+  $('autoNote').textContent = notes.length ? notes.join('\n')+'\n目視確認してから「計算する」を押してください。' : '自動入力できませんでした。OCRテキストまたは候補から手入力してください。';
+}
+function getSigmaFromBands(m,k){
+  const upper = parseNum(k===2?$('upper2').value:$('upper3').value);
+  const lower = parseNum(k===2?$('lower2').value:$('lower3').value);
+  const arr=[]; if(Number.isFinite(upper)) arr.push((upper-m)/k); if(Number.isFinite(lower)) arr.push((m-lower)/k);
+  const s=arr.filter(v=>Number.isFinite(v)&&v>0); if(!s.length) return NaN; return s.reduce((a,b)=>a+b,0)/s.length;
+}
+function makeEngine({n,k,x,m,s,mode}){
+  const denom=mode==='sample'?(n-1):n;
+  const rawSS=mode==='sample'?((n-1)*s*s+n*m*m):(n*(s*s+m*m));
+  const sum=n*m;
+  function stats(c){
+    const sum2=sum-x+c; const mean=sum2/n; const ss2=rawSS-x*x+c*c;
+    let variance=(ss2-n*mean*mean)/denom; if(variance<0&&variance>-1e-9)variance=0; if(variance<0)variance=0;
+    const sd=Math.sqrt(variance); return {mean,sd,upper:mean+k*sd,lower:mean-k*sd};
+  }
+  function bracketRoot(fn,center,dir){let a=center,b=center,fa=fn(a),fb=fn(b),step=Math.max(0.1,s||0.1);for(let i=0;i<120;i++){if(dir>0){b+=step;fb=fn(b);}else{a-=step;fa=fn(a);}if(fa===0||fb===0||(fa<0&&fb>0)||(fa>0&&fb<0))return[a,b];step*=1.35;}return null;}
+  function bisect(fn,a,b){let fa=fn(a);for(let i=0;i<100;i++){const mid=(a+b)/2,fm=fn(mid);if(Math.abs(fm)<1e-10)return mid;if((fa<0&&fm>0)||(fa>0&&fm<0)){b=mid;}else{a=mid;fa=fm;}}return(a+b)/2;}
+  function realtimeUpper(){const fn=c=>c-stats(c).upper; const br=bracketRoot(fn,Math.max(x,m+k*s),1); return br?bisect(fn,br[0],br[1]):NaN;}
+  function realtimeLower(){const fn=c=>c-stats(c).lower; const br=bracketRoot(fn,Math.min(x,m-k*s),-1); return br?bisect(fn,br[0],br[1]):NaN;}
+  function ternary(fn,lo,hi){for(let i=0;i<160;i++){const m1=lo+(hi-lo)/3,m2=hi-(hi-lo)/3;if(fn(m1)<fn(m2))hi=m2;else lo=m1;}const c=(lo+hi)/2;return{close:c,value:fn(c)};}
+  const range=Math.max(20*s,Math.abs(x-m)*6,5);
+  function catchUpper(){return ternary(c=>stats(c).upper,m-range,m+range);}
+  function catchLower(){const r=ternary(c=>-stats(c).lower,m-range,m+range);return{close:r.close,value:-r.value};}
+  return{realtimeUpper,realtimeLower,catchUpper,catchLower};
+}
+function calculate(){
+  const n=Math.round(parseNum($('n').value)), k=parseNum($('k').value), x=parseNum($('price').value), m=parseNum($('basis').value), mode=$('mode').value;
+  const s=getSigmaFromBands(m,k);
+  if(!Number.isFinite(n)||n<3){alert('期間を入力して');return;} if(!Number.isFinite(k)){alert('σ倍率を選んで');return;} if(!Number.isFinite(x)||!Number.isFinite(m)){alert('現在値と基準線を入力して');return;} if(!Number.isFinite(s)||s<=0){alert(k+'σの上限/下限を入力して');return;}
+  const eng=makeEngine({n,k,x,m,s,mode}); const rtU=eng.realtimeUpper(), rtL=eng.realtimeLower(), cu=eng.catchUpper(), cl=eng.catchLower();
+  $('results').innerHTML=`<div class="res main"><div class="name">① リアルタイム +${k}σ タッチ</div><div class="value">${fmt(rtU)}</div><div class="detail">現在値が上昇し、価格 = +${k}σ(価格) になる値。</div></div><div class="res main"><div class="name">① リアルタイム -${k}σ タッチ</div><div class="value">${fmt(rtL)}</div><div class="detail">現在値が下落し、価格 = -${k}σ(価格) になる値。</div></div><div class="res"><div class="name">② 高値追いつき +${k}σ タッチ</div><div class="value">${fmt(cu.value)}</div><div class="detail">最低高値：${fmt(cu.value)} / 必要終値：${fmt(cu.close)}<br>High = +${k}σ(Close)</div></div><div class="res"><div class="name">② 安値追いつき -${k}σ タッチ</div><div class="value">${fmt(cl.value)}</div><div class="detail">最高安値：${fmt(cl.value)} / 必要終値：${fmt(cl.close)}<br>Low = -${k}σ(Close)</div></div><div class="tiny">推定σ：${fmt(s)} / 標準偏差：${mode}</div>`;
+}
+function clearInputs(){['price','basis','upper2','lower2','upper3','lower3'].forEach(id=>setVal(id,NaN)); ['price','basis','upper2','lower2','upper3','lower3'].forEach(id=>{$(id).value=''; if(pairMap[id])$(pairMap[id]).value='';}); $('autoNote').textContent='';}
+$('imageInput').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0]; if(!f)return; const url=URL.createObjectURL(f); $('preview').src=url; $('modalImg').src=url; $('confirmCard').classList.remove('hidden');});
+$('preview').addEventListener('click',()=>{$('modal').classList.remove('hidden');}); $('closeModal').addEventListener('click',()=>$('modal').classList.add('hidden')); $('modal').addEventListener('click',e=>{if(e.target.id==='modal')$('modal').classList.add('hidden');});
+$('runOcrBtn').addEventListener('click',async()=>{const f=$('imageInput').files&&$('imageInput').files[0]; if(!f){alert('画像を選択して');return;} if(!window.Tesseract){alert('OCRライブラリ読み込み失敗。通信状態を確認して。');return;} $('confirmCard').classList.remove('hidden'); $('ocrStatus').classList.remove('hidden'); $('ocrStatus').textContent='OCR準備中…'; try{const res=await Tesseract.recognize(f,'eng',{logger:m=>{if(m.status)$('ocrStatus').textContent='OCR中: '+m.status+' '+(m.progress?Math.round(m.progress*100)+'%':'');}}); const text=res.data.text||''; $('ocrText').value=text; $('ocrStatus').textContent='OCR完了。画像横の数字を確認してから計算してください。'; autoFill(text);}catch(e){$('ocrStatus').textContent='OCR失敗: '+(e&&e.message?e.message:String(e));}});
+$('calcBtn').addEventListener('click',calculate); $('calcBtn2').addEventListener('click',calculate); $('clearBtn').addEventListener('click',clearInputs);
+})();
+</script>
+</body>
+</html>
