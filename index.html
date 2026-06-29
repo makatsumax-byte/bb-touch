@@ -79,39 +79,37 @@ function priceNums(s){
 function allPriceValues(t){return priceNums(t).map(o=>o.v)}
 function sanePrice(v){return v>100 && v<300}
 function rejectAxis(v,sma,span){ if(sma==null||span==null) return false; return Math.abs(v-sma)>span*1.75; }
-function afterBracketLineValue(text, bracket){
-  const lines=normalizeText(text).split(/\n+/).map(x=>x.trim()).filter(Boolean);
-  for(let i=0;i<lines.length;i++){
-    if(lines[i].includes(bracket)){
-      const zone=[lines[i],lines[i+1]||'',lines[i+2]||''].join(' ');
-      const nums=priceNums(zone).map(o=>o.v).filter(sanePrice);
-      if(nums.length) return nums[0];
-    }
-  }
-  return null;
+function segmentAfterBracket(text, bracket){
+  const t=normalizeText(text);
+  const idx=t.indexOf(bracket);
+  if(idx<0) return '';
+  const rest=t.slice(idx);
+  const nexts=['[2.0]','[3.0]','[4.0]','[5]','[25]','[200]'].filter(b=>b!==bracket)
+    .map(b=>rest.indexOf(b)).filter(i=>i>0);
+  const end=nexts.length?Math.min(...nexts):Math.min(rest.length, 120);
+  return rest.slice(0,end);
 }
-function pairAfterBracket(text, bracket, sma){
-  const lines=normalizeText(text).split(/\n+/).map(x=>x.trim()).filter(Boolean);
-  for(let i=0;i<lines.length;i++){
-    if(lines[i].includes(bracket)){
-      const zone=[lines[i],lines[i+1]||'',lines[i+2]||''].join(' ');
-      let nums=priceNums(zone).map(o=>o.v).filter(sanePrice);
-      if(nums.length===0) return {up:null, low:null};
-      let up=nums[0], low=null;
-      const span=Math.abs(up-(sma??up));
-      for(let j=1;j<nums.length;j++){
-        const v=nums[j];
-        if(sma!=null){
-          if(v<sma && !rejectAxis(v,sma,span||Math.abs((nums[0]||sma)-sma))) {low=v; break;}
-          if(v>sma && up<sma) {up=v;}
-        }else{ low=v; break; }
-      }
-      if(low==null && sma!=null && up!=null) low = 2*sma - up;
-      if(up!=null && low!=null && up<low){ const tmp=up; up=low; low=tmp; }
-      return {up, low};
-    }
+function valueAfterBracket(text, bracket){
+  const seg=segmentAfterBracket(text, bracket);
+  const nums=priceNums(seg).map(o=>o.v).filter(sanePrice);
+  if(!nums.length) return null;
+  return nums[0];
+}
+function bandPairFromSegment(text, bracket, sma){
+  const seg=segmentAfterBracket(text, bracket);
+  let nums=priceNums(seg).map(o=>o.v).filter(sanePrice);
+  if(!nums.length) return {up:null, low:null};
+  // Remove obvious right-axis scale labels. For a BB pair, upper must be above SMA and lower below SMA.
+  if(sma!=null){
+    const upperCandidates=nums.filter(v=>v>sma);
+    const lowerCandidates=nums.filter(v=>v<sma);
+    const up=upperCandidates.length?upperCandidates[0]:nums[0];
+    let low=lowerCandidates.length?lowerCandidates[0]:null;
+    // If OCR missed the lower band, estimate symmetrically from SMA and upper band.
+    if(low==null && up!=null) low=2*sma-up;
+    return {up, low};
   }
-  return {up:null, low:null};
+  return {up:nums[0], low:nums[1]??null};
 }
 function parseRakuten(text){
   const t=normalizeText(text);
@@ -122,14 +120,14 @@ function parseRakuten(text){
     const cur=[...t.matchAll(/現在値[^0-9]*((?:1\d{2}|2\d{2})[\.,]\d{3})/g)].map(m=>parseFloat(m[1].replace(',','.')));
     if(cur.length) out.current=cur[0];
   }
-  out.sma=afterBracketLineValue(t,'[21]');
-  // Some OCR reads 基準線 as C0/CO/FAELR but still preserves [21].
-  const p2=pairAfterBracket(t,'[2.0]',out.sma);
+  // Strictly take the first price inside the [21] segment only. Do not read right-axis labels.
+  out.sma=valueAfterBracket(t,'[21]');
+  const p2=bandPairFromSegment(t,'[2.0]',out.sma);
   out.up2=p2.up; out.low2=p2.low;
-  const p3=pairAfterBracket(t,'[3.0]',out.sma);
+  const p3=bandPairFromSegment(t,'[3.0]',out.sma);
   out.up3=p3.up; out.low3=p3.low;
-  // If 3σ lower is missing or contaminated, derive from symmetry.
-  if(out.sma!=null && out.up3!=null && (out.low3==null || out.low3>out.sma)) out.low3=2*out.sma-out.up3;
+  if(out.up2!=null && out.low2!=null && out.up2<out.low2){ const tmp=out.up2; out.up2=out.low2; out.low2=tmp; }
+  if(out.up3!=null && out.low3!=null && out.up3<out.low3){ const tmp=out.up3; out.up3=out.low3; out.low3=tmp; }
   return out;
 }
 function updateRecognized(o){ setRec('rCurrent',o.current); setRec('rSma',o.sma); setRec('rUp2',o.up2); setRec('rLow2',o.low2); setRec('rUp3',o.up3); setRec('rLow3',o.low3); }
