@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>BB Touch v2.2.0</title>
+<title>BB Touch v2.3.0</title>
 <meta name="theme-color" content="#0b1020" />
 <style>
 :root{--bg:#070b16;--panel:#11182a;--panel2:#0d1424;--line:#263657;--text:#eef4ff;--muted:#aab6cf;--accent:#42d1ff;--accent2:#83f0ae;--warn:#ffd166;--bad:#ff6b6b;--ok:#78e08f;--input:#0b1222}*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#07101f,#080b14 65%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px}.wrap{max-width:760px;margin:0 auto;padding:16px 14px 36px}.hero{padding:16px 0 12px}.title{font-size:34px;font-weight:900;letter-spacing:.2px}.sub{color:var(--muted);line-height:1.5;margin-top:6px}.card{background:rgba(17,24,42,.96);border:1px solid var(--line);border-radius:22px;padding:16px;margin:14px 0;box-shadow:0 12px 28px rgba(0,0,0,.25)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:520px){.grid{grid-template-columns:1fr}}label{display:block;color:var(--muted);font-weight:700;margin:8px 0 6px}input,select,textarea{width:100%;font-size:24px;color:var(--text);background:var(--input);border:1px solid #314165;border-radius:16px;padding:14px 16px;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(66,209,255,.16)}select{appearance:none}.row{display:flex;gap:10px;align-items:center}.btn{width:100%;border:0;border-radius:18px;padding:17px 18px;font-size:22px;font-weight:900;color:#05101a;background:linear-gradient(90deg,#6bd8ff,#8bf2aa);margin-top:14px}.btn.secondary{background:#0c1324;color:var(--text);border:1px solid #314165;font-size:16px}.btn.small{font-size:16px;padding:11px 12px;border-radius:14px;margin-top:8px}.btn.warn{background:linear-gradient(90deg,#ffd166,#ffad66)}.results{display:grid;gap:12px}.result{border:1px solid #21304f;border-radius:18px;padding:15px;background:#0d1424}.result.hot{border-color:var(--accent);box-shadow:0 0 0 1px rgba(66,209,255,.25) inset}.rlabel{color:var(--muted);font-weight:800}.rvalue{font-size:44px;line-height:1.05;font-weight:950;margin:8px 0}.note{color:var(--muted);line-height:1.45}.tiny{font-size:13px;color:var(--muted);line-height:1.45}.pill{display:inline-flex;gap:6px;align-items:center;border:1px solid #314165;background:#0b1222;color:var(--muted);border-radius:999px;padding:6px 10px;font-size:13px;margin:4px 4px 0 0}.hidden{display:none!important}.ocrBox{border:1px dashed #3a4b72;border-radius:18px;padding:14px;background:#0b1222}.status{padding:12px;border-radius:14px;background:#0b1222;border:1px solid #25385d;color:var(--muted);margin-top:10px;white-space:pre-wrap}.preview{width:100%;max-height:260px;object-fit:contain;border-radius:14px;background:#050914;border:1px solid #243352;margin-top:10px}.raw{height:120px;font-size:13px;line-height:1.35}.chips{margin-top:8px}.chip{display:inline-block;padding:8px 10px;margin:4px;border:1px solid #314165;border-radius:12px;background:#0b1222;color:var(--text);font-weight:700}.chip:active{transform:scale(.98)}.sectionTitle{font-size:21px;font-weight:900;margin-bottom:8px}.footer{padding:10px 2px;color:var(--muted);font-size:12px;line-height:1.5}.danger{color:var(--bad)}.ok{color:var(--ok)}.twoBtn{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}</style>
@@ -11,8 +11,8 @@
 <body>
 <div class="wrap">
   <div class="hero">
-    <div class="title">📈 BB Touch <span style="font-size:16px;color:#8aa0c8">v2.2.0</span></div>
-    <div class="sub">手入力＋画像OCR確認モード。OCR後は画像と認識値を同じ画面で確認し、最後に自分で計算ボタンを押します。</div>
+    <div class="title">📈 BB Touch <span style="font-size:16px;color:#8aa0c8">v2.3.0</span></div>
+    <div class="sub">手入力＋画像OCR確認モード。OCR後は高値/安値/200MA/右軸目盛りをできるだけ除外し、BB値を自動推定します。画像と認識値を確認してから計算します。</div>
   </div>
 
   <div class="card">
@@ -71,7 +71,7 @@
   </div>
 
   <div class="footer">
-    BB Touch v2.2.0 / 画像はこのページ内で読み取り、GitHubリポジトリへアップロードしません。外部OCR APIは使っていません。Tesseract.js本体はCDNから読み込まれます。
+    BB Touch v2.3.0 / 画像はこのページ内で読み取り、GitHubリポジトリへアップロードしません。外部OCR APIは使っていません。Tesseract.js本体はCDNから読み込まれます。
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -204,51 +204,118 @@
       + setReviewValue('-3σ',$('lower3').value);
     $('reviewGrid').classList.remove('hidden');
   }
+  function isAxisTickStr(x){
+    const n=Number(x);
+    if(!Number.isFinite(n)) return false;
+    // 210.000, 200.000, 190.000 のような右軸目盛りを除外
+    return /\.0{2,5}$/.test(String(x)) && Math.abs(n-Math.round(n/10)*10)<0.0001;
+  }
+  function uniqueWithOrder(arr){
+    const seen=new Set(); const out=[];
+    for(const x of arr){ const key=Number(x).toFixed(3); if(!seen.has(key)){seen.add(key); out.push(Number(x));} }
+    return out;
+  }
+  function inferBBValues(text){
+    const raw=extractRawNumbers(text);
+    const ohlc=parseOHLC(text);
+    const oVals=Object.values(ohlc).map(Number).filter(Number.isFinite);
+    const close = Number.isFinite(Number(ohlc.C)) ? Number(ohlc.C) : NaN;
+    const priceRef = Number.isFinite(close) ? close : (Number.isFinite(Number($('price').value)) ? Number($('price').value) : NaN);
+
+    // 候補クリーニング：OHLC・右軸目盛り・日付/小さすぎる値を除外
+    let seq = [];
+    for(const s of raw){
+      const v=Number(s);
+      if(!Number.isFinite(v)) continue;
+      if(v<50 || v>300) continue;
+      if(isAxisTickStr(s)) continue;
+      if(oVals.some(o=>Math.abs(o-v)<0.0006)) continue; // O/H/L/C除外
+      if(Number.isFinite(priceRef) && Math.abs(v-priceRef)>25) continue;
+      seq.push(v);
+    }
+    seq = uniqueWithOrder(seq);
+
+    const result={price: Number.isFinite(close)?close:NaN, mean:NaN, upper2:NaN, lower2:NaN, upper3:NaN, lower3:NaN, notes:[], candidates:seq};
+    if(Number.isFinite(result.price)) result.notes.push('現在値=Cを採用');
+
+    if(!seq.length) return result;
+
+    // 1) まずOCR出現順を強く尊重。楽天FXのBB表示は OHLC の後に「基準線→+2→-2→+3→-3」順で出やすい。
+    // ただし高値/安値ラベルや移動平均が混ざるため、後段で整合性チェックする。
+    let mean = seq[0];
+
+    // 2) 対称性チェックでSMA候補を補正。
+    // 「候補mの上下にだいたい同じ距離のペアがある」ものをSMAとして高評価。
+    let bestMean={m:mean,score:999};
+    for(let mi=0; mi<Math.min(seq.length,8); mi++){
+      const m=seq[mi];
+      const above=seq.filter(v=>v>m+0.03);
+      const below=seq.filter(v=>v<m-0.03);
+      let local=999;
+      for(const u of above){
+        for(const l of below){
+          const wu=u-m, wl=m-l;
+          if(wu<0.05 || wl<0.05 || wu>15 || wl>15) continue;
+          const symmetry=Math.abs(wu-wl);
+          const pairWidth=(wu+wl)/2;
+          // BB幅として自然なペアを優先、出現順が早い値も少し優先
+          const score=symmetry*2 + mi*0.25 + Math.abs(pairWidth-3)*0.04;
+          if(score<local) local=score;
+        }
+      }
+      // ただし候補が価格に近すぎる場合は高値/安値/MAの可能性があるので軽く減点
+      if(Number.isFinite(priceRef) && Math.abs(m-priceRef)<0.18) local+=1.5;
+      if(local<bestMean.score) bestMean={m,score:local};
+    }
+    // 対称ペアがかなり良い場合のみ補正。そうでなければOCR順の最初をSMAにする。
+    if(bestMean.score<1.2){ mean=bestMean.m; result.notes.push('SMA=上下対称性から推定'); }
+    else { result.notes.push('SMA=OCR順から推定'); }
+    result.mean=mean;
+
+    // 3) +2σはSMAより上で最も近い「自然なBB候補」。高値ラベル混入を避けるため、OHLCのHに近い値は除外済み。
+    const above=seq.filter(v=>v>mean+0.03).sort((a,b)=>a-b);
+    const below=seq.filter(v=>v<mean-0.03).sort((a,b)=>b-a);
+    if(above.length){ result.upper2=above[0]; result.notes.push('+2σ=SMA直上候補を採用'); }
+
+    // 4) -2σは、OCRで近い対称値があれば採用。なければSMAと+2σから対称推定。
+    if(Number.isFinite(result.upper2)){
+      const targetL=2*mean-result.upper2;
+      const lowerHit=below.find(v=>Math.abs(v-targetL)<=0.18);
+      if(Number.isFinite(lowerHit)){ result.lower2=lowerHit; result.notes.push('-2σ=対称に近いOCR候補を採用'); }
+      else { result.lower2=targetL; result.notes.push('-2σ=OCR欠落のため対称推定'); }
+
+      // 5) +3/-3は任意。+2幅の1.5倍近辺を優先し、200MAなど近すぎる値は除外。
+      const w=result.upper2-mean;
+      const targetU3=mean+w*1.5;
+      const targetL3=mean-w*1.5;
+      const upper3C=seq.filter(v=>v>result.upper2+0.05).sort((a,b)=>Math.abs(a-targetU3)-Math.abs(b-targetU3))[0];
+      const lower3C=seq.filter(v=>v<result.lower2-0.05).sort((a,b)=>Math.abs(a-targetL3)-Math.abs(b-targetL3))[0];
+      if(Number.isFinite(upper3C) && Math.abs(upper3C-targetU3)<=0.45){ result.upper3=upper3C; result.notes.push('+3σ候補を入力'); }
+      if(Number.isFinite(lower3C) && Math.abs(lower3C-targetL3)<=0.45){ result.lower3=lower3C; result.notes.push('-3σ候補を入力'); }
+    }
+    return result;
+  }
+
   function autoFillFromOCR(){
     const text=$('ocrText').value;
-    const nums=extractNumbers();
-    const ohlc=parseOHLC(text);
-    const cleaned=cleanCandidates(nums, ohlc).map(Number);
-    const notes=[];
-
-    // 1) 現在値はC:を最優先
-    const close = ohlc.C ? Number(ohlc.C) : (Number.isFinite(Number($('price').value)) ? Number($('price').value) : NaN);
-    if(Number.isFinite(close)){ $('price').value=fmt(close); notes.push('現在値=Cを採用'); }
-
-    // 2) OCR本文の出現順を重視。OHLC後に出る最初の値をSMA候補にする。
-    let mean = NaN, upper2 = NaN, lower2 = NaN, upper3 = NaN, lower3 = NaN;
-    const seq=cleaned.filter((v,i,a)=>a.indexOf(v)===i);
-    if(seq.length){
-      // currentに近すぎる値は高値安値ラベルの可能性があるので、Cから0.15円以内は除外してSMA候補を探す
-      const seqForMean = Number.isFinite(close) ? seq.filter(v=>Math.abs(v-close)>0.15) : seq.slice();
-      mean = seqForMean.length ? seqForMean[0] : seq[0];
-      $('mean').value=fmt(mean); notes.push('SMA=OCR順から推定');
-
-      const afterMean = seq.slice(seq.indexOf(mean)+1);
-      const ups = afterMean.filter(v=>v>mean).sort((a,b)=>a-b);
-      const downs = afterMean.filter(v=>v<mean).sort((a,b)=>b-a);
-      if(ups.length){ upper2=ups[0]; $('upper2').value=fmt(upper2); notes.push('+2σ=OCR順/近接値から推定'); }
-      if(Number.isFinite(upper2)){
-        const targetLower=2*mean-upper2;
-        const lowerHit=downs.find(v=>Math.abs(v-targetLower)<=0.08);
-        lower2 = lowerHit ?? targetLower;
-        $('lower2').value=fmt(lower2);
-        notes.push(lowerHit ? '-2σ=OCR値から採用' : '-2σ=SMAと+2σから対称推定');
-        const width=upper2-mean;
-        const u3cand=afterMean.filter(v=>v>upper2).sort((a,b)=>a-b)[0];
-        const l3target=mean-width*1.5;
-        const l3cand=afterMean.filter(v=>v<lower2).sort((a,b)=>Math.abs(a-l3target)-Math.abs(b-l3target))[0];
-        if(u3cand && (u3cand-mean) > width*1.15){ upper3=u3cand; $('upper3').value=fmt(upper3); notes.push('+3σ候補も入力'); }
-        if(l3cand && Math.abs(l3cand-l3target)<0.25){ lower3=l3cand; $('lower3').value=fmt(lower3); notes.push('-3σ候補も入力'); }
-      }
-    }
+    extractNumbers();
+    const inf=inferBBValues(text);
+    const put=(id,v)=>{ if(Number.isFinite(v)) $(id).value=fmt(v); };
+    put('price',inf.price);
+    put('mean',inf.mean);
+    put('upper2',inf.upper2);
+    put('lower2',inf.lower2);
+    put('upper3',inf.upper3);
+    put('lower3',inf.lower3);
 
     const ok=['price','mean','upper2','lower2'].every(id=>$(id).value.trim());
     $('autoStatus').classList.remove('hidden');
-    $('autoStatus').textContent = (ok?'自動入力しました。必ず目視確認してください。\n':'自動入力できない項目があります。候補から手入力してください。\n') + notes.join(' / ');
+    $('autoStatus').textContent = (ok?'自動入力しました。必ず画像横で目視確認してください。\n':'自動入力できない項目があります。候補から手入力してください。\n')
+      + inf.notes.join(' / ')
+      + (inf.candidates.length ? '\nBB候補: '+inf.candidates.map(v=>fmt(v)).join(', ') : '');
     updateReview();
   }
-  ['price','mean','upper2','lower2','upper3','lower3'].forEach(id=>$(id).addEventListener('input',updateReview)); $('calcBtn').addEventListener('click',calculate); $('saveBtn').addEventListener('click',()=>{save(); alert('保存しました');}); $('clearBtn').addEventListener('click',clear); $('extractBtn').addEventListener('click',extractNumbers); $('autoFillBtn').addEventListener('click',autoFillFromOCR);
+  ['price' ,'mean','upper2','lower2','upper3','lower3'].forEach(id=>$(id).addEventListener('input',updateReview)); $('calcBtn').addEventListener('click',calculate); $('saveBtn').addEventListener('click',()=>{save(); alert('保存しました');}); $('clearBtn').addEventListener('click',clear); $('extractBtn').addEventListener('click',extractNumbers); $('autoFillBtn').addEventListener('click',autoFillFromOCR);
   $('imageInput').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0]; if(!f) return; const url=URL.createObjectURL(f); $('preview').src=url; $('preview').classList.remove('hidden'); $('reviewGrid').classList.remove('hidden'); updateReview();});
   $('runOcrBtn').addEventListener('click',async()=>{
     const f=$('imageInput').files&&$('imageInput').files[0]; if(!f){alert('画像を選択してください');return;}
