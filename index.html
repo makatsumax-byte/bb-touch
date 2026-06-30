@@ -10,7 +10,7 @@
 </style>
 </head>
 <body><div class="wrap">
-<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v3.3.0</span></h1>
+<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v3.4.0</span></h1>
 <p class="sub">楽天FXのボリンジャーバンド凡例専用パーサー。画像と入力値は外部送信しません。</p>
 
 <div class="card">
@@ -64,7 +64,7 @@
   <div id="candidates"></div>
   <p class="small">候補ボタンは「現在値 → SMA → +2σ → -2σ → +3σ → -3σ」の順で入力欄に入ります。</p>
 </div>
-<div class="footer">BB Touch v3.3.0</div>
+<div class="footer">BB Touch v3.4.0</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
@@ -106,21 +106,83 @@ function tokenPriceAfterBracket(text, bracketPattern, opts={}){
   const m=re.exec(t);
   if(!m) return [];
   const start=m.index+m[0].length;
-  // 次の [x.x] or 移動平均まで。行が崩れてもその区間内だけ見る。
   const rest=t.slice(start);
-  const nextRe=/\[\s*(?:2|3|4)\s*[\.,]\s*0\s*\]|\[\s*(?:5|21|25|200)\s*\]|σ\s*[ABC]|[o0]?[ABC]\s*\[|期間\s*[ACH]|単純移動平均|RSI/i;
+  const nextRe=/\[\s*(?:2|3|4)\s*[\.,]?\s*0\s*\]|\[\s*(?:5|21|25|200)\s*\]|σ\s*[ABC]|[o0σ~]?\s*[ABC]\s*\[|期間\s*[ACH]|単純移動平均|RSI/i;
   const nm=nextRe.exec(rest);
-  let seg=rest.slice(0,nm?nm.index:Math.min(rest.length,90));
-  let nums=priceObjs(seg).map(o=>o.v).filter(sanePrice);
-  return nums;
+  let seg=rest.slice(0,nm?nm.index:Math.min(rest.length,110));
+  return priceObjs(seg).map(o=>o.v).filter(sanePrice);
 }
+function linesOf(text){
+  return normalizeText(text||'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
+}
+function isAxisTick(v){
+  return /\.(000|100|200|300|400|500|600|700|800|900)$/.test(fmt(v));
+}
+function lineHasSigmaA(line){
+  const l=normalizeText(line).replace(/\s+/g,'');
+  // OCRは σA を oA/0A/~A に崩すことがある。期間Aなどは [5] が続くので除外。
+  return /(^|[^A-Z0-9])[o0σ~]?A\s*\[?\s*(2|20|2O|240|2\.0|2,0)/i.test(l) || /\[\s*(2|20|2O|240|2[\.,]0)\s*\]/i.test(l) && /A/i.test(l);
+}
+function isSmaLine(line){
+  const l=normalizeText(line);
+  return /基準線|\[\s*21\s*\]/i.test(l);
+}
+function linePrices(line){
+  let vals=priceObjs(line).map(o=>o.v).filter(sanePrice);
+  // OCRが 204318198528 のように連結した場合の救済。200円台/100円台の3桁小数2個として割る。
+  const compact=String(line).replace(/[^0-9]/g,'');
+  if(vals.length<2 && compact.length>=12){
+    for(let i=6;i<=compact.length-6;i++){
+      const a=compact.slice(i-6,i), b=compact.slice(i,i+6);
+      const av=parseFloat(a.slice(0,3)+'.'+a.slice(3));
+      const bv=parseFloat(b.slice(0,3)+'.'+b.slice(3));
+      if(sanePrice(av)&&sanePrice(bv)) vals.push(av,bv);
+    }
+  }
+  return uniq(vals);
+}
+function findSmaFromLines(text){
+  for(const line of linesOf(text)){
+    if(isSmaLine(line)){
+      const vals=linePrices(line);
+      if(vals.length) return {v:vals[0], tag:'[21]行'};
+    }
+  }
+  const vals=tokenPriceAfterBracket(text,'\\[\\s*21\\s*\\]');
+  if(vals.length) return {v:vals[0], tag:'[21]凡例'};
+  return {v:null, tag:''};
+}
+function findSigmaAPairFromLines(text,sma){
+  const lines=linesOf(text);
+  for(let idx=0; idx<lines.length; idx++){
+    const line=lines[idx];
+    if(isSmaLine(line)) continue;
+    if(isSigmaALine(line)){
+      // 同じ行＋次の1行だけを見る。右軸やMA行が混ざる前に切る。
+      const seg=[line, lines[idx+1]||''].join(' ');
+      let vals=linePrices(seg).filter(v=>v!==sma);
+      if(vals.length>=2){
+        const p=choosePair(vals,sma,2);
+        if(p.up!=null && p.low!=null) return {up:p.up,low:p.low,tagUp:'σA行',tagLow:'σA行', raw:seg};
+      }
+    }
+  }
+  // [2.0] が崩れていない場合の通常ルート
+  let vals=tokenPriceAfterBracket(text,'\\[\\s*2\\s*[\\.,]\\s*0\\s*\\]');
+  if(vals.length>=1){
+    const p=choosePair(vals,sma,2);
+    if(p.up!=null || p.low!=null) return {up:p.up,low:p.low,tagUp:p.tagUp||'[2.0]',tagLow:p.tagLow||'[2.0]', raw:'[2.0]'};
+  }
+  return {up:null,low:null,tagUp:'',tagLow:'',raw:''};
+}
+// backward compatible alias for older calls/tests
+const isSigmaALine = lineHasSigmaA;
 function choosePair(nums,sma,k){
   nums=uniq(nums.filter(sanePrice));
-  // 右軸候補を除外：.000/.500/.400/.300/.200/.100/.900/.800 のぴったり目盛りは、区間内に3個以上ある時だけ後回し。
-  const tickish=v=>/\.(000|100|200|300|400|500|600|700|800|900)$/.test(fmt(v));
   if(nums.length>2){
-    const nonTicks=nums.filter(v=>!tickish(v));
-    if(nonTicks.length>=1) nums=nonTicks.concat(nums.filter(v=>tickish(v)));
+    // SMAに近い上下を優先。右軸目盛りは後回し。
+    const nonTicks=nums.filter(v=>!isAxisTick(v));
+    if(nonTicks.length>=2) nums=nonTicks.concat(nums.filter(v=>isAxisTick(v)));
   }
   let up=null, low=null, tagUp='', tagLow='';
   if(sma!=null){
@@ -128,7 +190,6 @@ function choosePair(nums,sma,k){
     const below=nums.filter(v=>v<sma).sort((a,b)=>Math.abs(a-sma)-Math.abs(b-sma));
     if(above.length){up=above[0]; tagUp='OCR'}
     if(below.length){low=below[0]; tagLow='OCR'}
-    // もし上側しか読めない時は対称推定。週足などで下側が抜ける対策。
     if(up!=null && low==null){low=2*sma-up; tagLow='SMA対称推定'}
     if(low!=null && up==null){up=2*sma-low; tagUp='SMA対称推定'}
   } else {
@@ -140,31 +201,29 @@ function choosePair(nums,sma,k){
 function parseBandsSmart(fullText, legendText){
   const full=normalizeText(fullText||'');
   const legend=normalizeText(legendText||'');
-  const combined = cutLegendText(legend) + '\n' + cutLegendText(full);
+  const legendCut=cutLegendText(legend);
+  const fullCut=cutLegendText(full);
+  const combined = legendCut + '\n' + fullCut;
   let out={sma:null,up2:null,low2:null,up3:null,low3:null,tags:{}};
 
-  // 1) SMAは [21] の直後だけを最優先。
-  const smaCandidates = tokenPriceAfterBracket(combined,'\\[\\s*21\\s*\\]')
-    .concat(tokenPriceAfterBracket(combined,'基準線[^\\[]*\\[?\\s*21?\\s*\\]?'));
-  if(smaCandidates.length){out.sma=smaCandidates[0]; out.tags.sma='[21]凡例'}
+  // 1) SMAは [21] 行。クロップと全体の両方から探す。
+  const sma1=findSmaFromLines(legendCut);
+  const sma2=findSmaFromLines(fullCut);
+  const smaObj=sma1.v!=null?sma1:sma2;
+  out.sma=smaObj.v; out.tags.sma=smaObj.tag;
 
-  // 2) ±2σは [2.0] 区間の最初の価格ペアだけ。ここが主情報。
-  const nums2=tokenPriceAfterBracket(combined,'\\[\\s*2\\s*[\\.,]\\s*0\\s*\\]');
-  const p2=choosePair(nums2,out.sma,2);
-  out.up2=p2.up; out.low2=p2.low; out.tags.up2=p2.tagUp||'[2.0]'; out.tags.low2=p2.tagLow||'[2.0]';
+  // 2) ±2σは σA/[2.0] の行だけ。USDJPYのように [2.0] が [240] / [20] に壊れてもA行を拾う。
+  const pA1=findSigmaAPairFromLines(legendCut,out.sma);
+  const pA2=findSigmaAPairFromLines(fullCut,out.sma);
+  const pA=(pA1.up!=null&&pA1.low!=null)?pA1:pA2;
+  out.up2=pA.up; out.low2=pA.low; out.tags.up2=pA.tagUp; out.tags.low2=pA.tagLow;
 
-  // 3) ±3σは原則OCRで読まない。SMAと±2σから計算する。
-  //    これで σC[4.0] や右軸目盛りを +3σ と誤認する事故を防ぐ。
+  // 3) ±3σは読まない。SMAと±2σから計算。これでσC/右軸混入を潰す。
   if(out.sma!=null && out.up2!=null && out.low2!=null){
-    const oneSigma = ((out.up2 - out.sma) + (out.sma - out.low2)) / 4; // ±2σの平均幅 /2
+    const oneSigma = ((out.up2 - out.sma) + (out.sma - out.low2)) / 4;
     out.up3 = out.sma + oneSigma * 3;
     out.low3 = out.sma - oneSigma * 3;
     out.tags.up3='±2σから計算'; out.tags.low3='±2σから計算';
-  } else {
-    // ±2σが欠けた時だけ [3.0] を補助的に使う。
-    const nums3=tokenPriceAfterBracket(combined,'\\[\\s*3\\s*[\\.,]\\s*0\\s*\\]');
-    const p3=choosePair(nums3,out.sma,3);
-    out.up3=p3.up; out.low3=p3.low; out.tags.up3=p3.tagUp||'[3.0]補助'; out.tags.low3=p3.tagLow||'[3.0]補助';
   }
   return out;
 }
