@@ -7,10 +7,31 @@
 <style>
 :root{--bg:#080d1b;--card:#10182b;--card2:#0c1325;--line:#2c3b62;--text:#eef3ff;--muted:#aeb8d0;--accent:#25c7ff;--accent2:#8cf0b0;--warn:#ffbd66;--bad:#ffb4b4}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#081022,#060914);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px}.wrap{max-width:880px;margin:0 auto;padding:18px 14px 42px}h1{font-size:34px;margin:8px 0 4px}.sub{color:var(--muted);margin:0 0 18px}.card{background:rgba(16,24,43,.95);border:1px solid var(--line);border-radius:22px;padding:16px;margin:14px 0;box-shadow:0 12px 40px rgba(0,0,0,.22)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:680px){.grid{grid-template-columns:1fr}}label{display:block;color:var(--muted);font-weight:800;margin:8px 0 6px}input,select,textarea{width:100%;background:var(--card2);color:var(--text);border:1px solid #34456f;border-radius:16px;padding:13px 14px;font-size:21px;outline:none}textarea{font-size:15px;line-height:1.45;min-height:150px}button{width:100%;border:0;border-radius:18px;padding:16px 14px;font-size:20px;font-weight:900;color:#06101c;background:linear-gradient(90deg,#71d6ff,#86efac);margin:10px 0}.btn2{background:#0c1325;color:var(--text);border:1px solid #34456f}.btnWarn{background:linear-gradient(90deg,#ffe27a,#ffac63);color:#111}.row{display:flex;gap:10px;align-items:center}.pill{display:inline-block;padding:8px 12px;border:1px solid #34456f;border-radius:14px;margin:5px;background:#0c1325;color:var(--text);font-weight:800}.previewBox{display:grid;grid-template-columns:1.05fr .95fr;gap:12px;align-items:start}@media(max-width:680px){.previewBox{grid-template-columns:1fr}}.imgBox{border:1px dashed #405482;border-radius:20px;padding:10px;background:#070d1a;text-align:center}.imgBox img{max-width:100%;max-height:460px;border-radius:10px;object-fit:contain}.cropBox img{max-height:260px;image-rendering:auto}.recognized{border:1px solid #2b3c63;border-radius:20px;padding:16px;background:#0b1324}.recognized h2{margin:0 0 12px;font-size:26px}.kv{display:grid;grid-template-columns:105px 1fr;gap:8px;border-bottom:1px solid #26375d;padding:9px 0;align-items:center}.kv:last-child{border-bottom:0}.k{color:var(--muted);font-weight:900;font-size:20px}.v{font-size:30px;font-weight:950}.v small{display:block;font-size:12px;color:var(--warn);font-weight:800}.miss{color:var(--bad);font-size:21px}.result{border:1px solid #25c7ff;border-radius:20px;padding:16px;margin:12px 0;background:#0d1629}.result .title{color:var(--muted);font-weight:800}.result .num{font-size:44px;font-weight:950;margin:6px 0}.small{color:var(--muted);font-size:14px;line-height:1.5}.debug{white-space:pre-wrap}.hide{display:none}.ok{color:#8cf0b0}.bad{color:#ffb4b4}.selectRow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}@media(max-width:680px){.selectRow{grid-template-columns:1fr}}.footer{color:#77839f;text-align:center;font-size:12px;margin-top:20px}
+
+/* v3.5 layout: OCR認識値・入力・結果をスマホ向けに小型化 */
+.recognized.compact h2{font-size:18px;margin-bottom:8px}
+.recognized.compact{padding:12px;border-radius:18px}
+.recognized.compact .kv{grid-template-columns:78px 1fr;padding:6px 0;gap:6px}
+.recognized.compact .k{font-size:13px}
+.recognized.compact .v{font-size:18px;line-height:1.15}
+.recognized.compact .v small{font-size:9px;margin-top:2px}
+.recognized.compact .miss{font-size:16px}
+.inputCard h2,.resultsCard h2{font-size:18px;margin:0 0 10px}
+.inputCard label{font-size:12px;margin:5px 0 4px}
+.inputCard input,.inputCard select{font-size:14px;padding:9px 10px;border-radius:12px}
+.inputCard button{font-size:14px;padding:11px 10px;border-radius:14px;margin:7px 0}
+.resultsCard .result{padding:11px;margin:9px 0;border-radius:16px}
+.resultsCard .result .title{font-size:12px}
+.resultsCard .result .num{font-size:24px;margin:3px 0;line-height:1.05}
+.resultsCard .small{font-size:11px;line-height:1.35}
+.resultsHead{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.metaBadge{font-size:12px;font-weight:900;color:#07111f;background:linear-gradient(90deg,#71d6ff,#86efac);border-radius:999px;padding:5px 9px;max-width:100%;white-space:nowrap}
+@media(max-width:680px){.recognized.compact .kv{grid-template-columns:70px 1fr}.recognized.compact .v{font-size:17px}.resultsCard .result .num{font-size:23px}}
+
 </style>
 </head>
 <body><div class="wrap">
-<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v3.4.0</span></h1>
+<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v3.5.0</span></h1>
 <p class="sub">楽天FXのボリンジャーバンド凡例専用パーサー。画像と入力値は外部送信しません。</p>
 
 <div class="card">
@@ -25,7 +46,7 @@
       <label>BB凡例クロップ（ここからSMA/σを読む）</label>
       <div class="imgBox cropBox"><img id="cropPreview"></div>
     </div>
-    <div class="recognized">
+    <div class="recognized compact">
       <h2>OCR認識値</h2>
       <div class="kv"><div class="k">現在値</div><div id="rCurrent" class="v miss">未認識</div></div>
       <div class="kv"><div class="k">SMA</div><div id="rSma" class="v miss">未認識</div></div>
@@ -38,7 +59,7 @@
   </div>
 </div>
 
-<div class="card">
+<div class="card inputCard">
   <h2>入力</h2>
   <div class="grid">
     <div><label>期間</label><input id="period" type="number" inputmode="decimal" value="21"></div>
@@ -54,7 +75,7 @@
   <div class="row"><button id="saveBtn" class="btn2">入力を保存</button><button id="clearBtn" class="btn2">クリア</button></div>
 </div>
 
-<div id="results" class="card hide"><h2>結果</h2><div id="resultList"></div><p id="note" class="small"></p></div>
+<div id="results" class="card resultsCard hide"><div class="resultsHead"><h2>結果</h2><span id="resultMeta" class="metaBadge">通貨ペア・足種 未認識</span></div><div id="resultList"></div><p id="note" class="small"></p></div>
 
 <div class="card">
   <h2>OCRテキスト</h2>
@@ -64,7 +85,7 @@
   <div id="candidates"></div>
   <p class="small">候補ボタンは「現在値 → SMA → +2σ → -2σ → +3σ → -3σ」の順で入力欄に入ります。</p>
 </div>
-<div class="footer">BB Touch v3.4.0</div>
+<div class="footer">BB Touch v3.5.0</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
@@ -91,6 +112,26 @@ function parseCurrentFromFull(text){
   if(closes.length) return {v:closes[closes.length-1], tag:'C:のみ'};
   return {v:null,tag:''};
 }
+function parseChartMeta(text){
+  const t=normalizeText(text||'');
+  let pair=null, tf=null;
+  // 楽天FXの表示は CHF/JPY, USD/JPY など。OCRで前後に記号が付いても拾う。
+  const pairM=t.match(/\b([A-Z]{3})\s*[\/／]\s*([A-Z]{3})\b/);
+  if(pairM) pair=pairM[1]+'/'+pairM[2];
+  // 足種。分足・時間足・日足・週足を優先。
+  const tfPatterns=[/(\d+)\s*分\s*足/,/(\d+)\s*時間\s*足/,/日\s*足/,/週\s*足/,/月\s*足/];
+  for(const re of tfPatterns){
+    const m=t.match(re);
+    if(m){
+      if(m[1] && /分/.test(m[0])) tf=m[1]+'分足';
+      else if(m[1] && /時間/.test(m[0])) tf=m[1]+'時間足';
+      else tf=m[0].replace(/\s+/g,'');
+      break;
+    }
+  }
+  return {pair,tf,label:(pair||'通貨ペア未認識')+'・'+(tf||'足種未認識')};
+}
+function updateResultMeta(meta){ if($('resultMeta')) $('resultMeta').textContent=(meta&&meta.label)||'通貨ペア・足種 未認識'; }
 function cutLegendText(fullText){
   const t=normalizeText(fullText);
   const startCandidates=[t.search(/ボリンジャ|Bollinger|基準線|\[\s*21\s*\]/i)].filter(i=>i>=0);
@@ -250,7 +291,7 @@ async function makeLegendCropBlob(file){
 }
 function updateRecognized(o){ setRec('rCurrent',o.current,o.tags?.current); setRec('rSma',o.sma,o.tags?.sma); setRec('rUp2',o.up2,o.tags?.up2); setRec('rLow2',o.low2,o.tags?.low2); setRec('rUp3',o.up3,o.tags?.up3); setRec('rLow3',o.low3,o.tags?.low3); }
 function splitOcrSections(txt){ const t=txt||''; const p=t.split('--- BB凡例クロップ ---'); return {full:p[0]||t, legend:p[1]||t}; }
-function applyParsed(){ const s=splitOcrSections($('ocrText').value); const o=parseRakuten(s.full,s.legend); setVal('current',o.current); setVal('sma',o.sma); setVal('up2',o.up2); setVal('low2',o.low2); setVal('up3',o.up3); setVal('low3',o.low3); updateRecognized(o); makeCandidates(); return o; }
+function applyParsed(){ const s=splitOcrSections($('ocrText').value); const meta=parseChartMeta(s.full+'\n'+s.legend); updateResultMeta(meta); const o=parseRakuten(s.full,s.legend); setVal('current',o.current); setVal('sma',o.sma); setVal('up2',o.up2); setVal('low2',o.low2); setVal('up3',o.up3); setVal('low3',o.low3); updateRecognized(o); makeCandidates(); return o; }
 function makeCandidates(){ const vals=[...new Set(allPriceValues($('ocrText').value).map(v=>fmt(v)))]; $('candidates').innerHTML=vals.map(v=>`<button type="button" class="pill" onclick="fillNext('${v}')">${v}</button>`).join(''); }
 let fillOrder=['current','sma','up2','low2','up3','low3'], fillIdx=0; window.fillNext=(v)=>{ setVal(fillOrder[fillIdx%fillOrder.length],parseFloat(v)); fillIdx++; };
 $('imageInput').addEventListener('change',()=>{const f=$('imageInput').files[0]; if(!f)return; const url=URL.createObjectURL(f); $('preview').src=url; $('confirmArea').classList.remove('hide');});
@@ -338,7 +379,7 @@ function catchUp(mu,sigma,N,k,side){
   const close=(lo+hi)/2;
   return {price:band(close), close};
 }
-$('calcBtn').addEventListener('click',()=>{ const N=n($('period').value)||21, mu=n($('sma').value); const k=parseFloat($('sigmaSelect').value)||2; if(mu==null){alert('SMAを入力してください');return;} let up=n(k===2?$('up2').value:$('up3').value), low=n(k===2?$('low2').value:$('low3').value); if(up==null||low==null){alert('選択したσの上下バンドを入力してください');return;} const sigma=(up-low)/(2*k); const rtUp=calcRealTime(mu,sigma,N,k,1), rtLow=calcRealTime(mu,sigma,N,k,-1); const cu=catchUp(mu,sigma,N,k,1), cl=catchUp(mu,sigma,N,k,-1); const rows=[['① リアルタイム +'+k+'σ タッチ',rtUp,'現在値が上昇し、価格 = +'+k+'σ(価格) になる値。'],['① リアルタイム -'+k+'σ タッチ',rtLow,'現在値が下落し、価格 = -'+k+'σ(価格) になる値。'],['② 高値追いつき +'+k+'σ タッチ',cu.price,'最低高値：'+fmt(cu.price)+' / 必要終値：'+fmt(cu.close)],['② 安値追いつき -'+k+'σ タッチ',cl.price,'最高安値：'+fmt(cl.price)+' / 必要終値：'+fmt(cl.close)]]; $('resultList').innerHTML=rows.map(r=>`<div class="result"><div class="title">${r[0]}</div><div class="num">${fmt(r[1])}</div><div class="small">${r[2]}</div></div>`).join(''); $('note').textContent=`推定σ：${fmt(sigma)} / 最新終値として現在値を1本分だけ置換して計算。`; $('results').classList.remove('hide');});
+$('calcBtn').addEventListener('click',()=>{ const sec=splitOcrSections($('ocrText').value); updateResultMeta(parseChartMeta(sec.full+'\n'+sec.legend)); const N=n($('period').value)||21, mu=n($('sma').value); const k=parseFloat($('sigmaSelect').value)||2; if(mu==null){alert('SMAを入力してください');return;} let up=n(k===2?$('up2').value:$('up3').value), low=n(k===2?$('low2').value:$('low3').value); if(up==null||low==null){alert('選択したσの上下バンドを入力してください');return;} const sigma=(up-low)/(2*k); const rtUp=calcRealTime(mu,sigma,N,k,1), rtLow=calcRealTime(mu,sigma,N,k,-1); const cu=catchUp(mu,sigma,N,k,1), cl=catchUp(mu,sigma,N,k,-1); const rows=[['① リアルタイム +'+k+'σ タッチ',rtUp,'現在値が上昇し、価格 = +'+k+'σ(価格) になる値。'],['① リアルタイム -'+k+'σ タッチ',rtLow,'現在値が下落し、価格 = -'+k+'σ(価格) になる値。'],['② 高値追いつき +'+k+'σ タッチ',cu.price,'最低高値：'+fmt(cu.price)+' / 必要終値：'+fmt(cu.close)],['② 安値追いつき -'+k+'σ タッチ',cl.price,'最高安値：'+fmt(cl.price)+' / 必要終値：'+fmt(cl.close)]]; $('resultList').innerHTML=rows.map(r=>`<div class="result"><div class="title">${r[0]}</div><div class="num">${fmt(r[1])}</div><div class="small">${r[2]}</div></div>`).join(''); $('note').textContent=`推定σ：${fmt(sigma)} / 最新終値として現在値を1本分だけ置換して計算。`; $('results').classList.remove('hide');});
 $('saveBtn').addEventListener('click',()=>{const data={}; ['period','sigmaSelect',...ids,'up3','low3'].forEach(id=>data[id]=$(id).value); localStorage.setItem('bbtouch',JSON.stringify(data)); $('status').textContent='保存しました。';});
 $('clearBtn').addEventListener('click',()=>{ids.concat(['up3','low3']).forEach(id=>$(id).value='');});
 try{const data=JSON.parse(localStorage.getItem('bbtouch')||'{}'); Object.keys(data).forEach(id=>{if($(id))$(id).value=data[id]});}catch(e){}
