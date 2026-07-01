@@ -8,7 +8,7 @@
 :root{--bg:#080d1b;--card:#10182b;--card2:#0c1325;--line:#2c3b62;--text:#eef3ff;--muted:#aeb8d0;--accent:#25c7ff;--accent2:#8cf0b0;--warn:#ffbd66;--bad:#ffb4b4}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#081022,#060914);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px}.wrap{max-width:880px;margin:0 auto;padding:18px 14px 42px}h1{font-size:34px;margin:8px 0 4px}.sub{color:var(--muted);margin:0 0 18px}.card{background:rgba(16,24,43,.95);border:1px solid var(--line);border-radius:22px;padding:16px;margin:14px 0;box-shadow:0 12px 40px rgba(0,0,0,.22)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:680px){.grid{grid-template-columns:1fr}}label{display:block;color:var(--muted);font-weight:800;margin:8px 0 6px}input,select,textarea{width:100%;background:var(--card2);color:var(--text);border:1px solid #34456f;border-radius:16px;padding:13px 14px;font-size:21px;outline:none}textarea{font-size:15px;line-height:1.45;min-height:150px}button{width:100%;border:0;border-radius:18px;padding:16px 14px;font-size:20px;font-weight:900;color:#06101c;background:linear-gradient(90deg,#71d6ff,#86efac);margin:10px 0}.btn2{background:#0c1325;color:var(--text);border:1px solid #34456f}.btnWarn{background:linear-gradient(90deg,#ffe27a,#ffac63);color:#111}.row{display:flex;gap:10px;align-items:center}.pill{display:inline-block;padding:8px 12px;border:1px solid #34456f;border-radius:14px;margin:5px;background:#0c1325;color:var(--text);font-weight:800}.previewBox{display:grid;grid-template-columns:1.05fr .95fr;gap:12px;align-items:start}@media(max-width:680px){.previewBox{grid-template-columns:1fr}}.imgBox{border:1px dashed #405482;border-radius:20px;padding:10px;background:#070d1a;text-align:center}.imgBox img{max-width:100%;max-height:460px;border-radius:10px;object-fit:contain}.cropBox img{max-height:260px;image-rendering:auto}.recognized{border:1px solid #2b3c63;border-radius:20px;padding:16px;background:#0b1324}.recognized h2{margin:0 0 12px;font-size:26px}.kv{display:grid;grid-template-columns:105px 1fr;gap:8px;border-bottom:1px solid #26375d;padding:9px 0;align-items:center}.kv:last-child{border-bottom:0}.k{color:var(--muted);font-weight:900;font-size:20px}.v{font-size:30px;font-weight:950}.v small{display:block;font-size:12px;color:var(--warn);font-weight:800}.miss{color:var(--bad);font-size:21px}.result{border:1px solid #25c7ff;border-radius:20px;padding:16px;margin:12px 0;background:#0d1629}.result .title{color:var(--muted);font-weight:800}.result .num{font-size:44px;font-weight:950;margin:6px 0}.small{color:var(--muted);font-size:14px;line-height:1.5}.debug{white-space:pre-wrap}.hide{display:none}.ok{color:#8cf0b0}.bad{color:#ffb4b4}.selectRow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}@media(max-width:680px){.selectRow{grid-template-columns:1fr}}.footer{color:#77839f;text-align:center;font-size:12px;margin-top:20px}
 
-/* v3.5 layout: OCR認識値・入力・結果をスマホ向けに小型化 */
+/* v3.5.4 layout: 日足・週足・月足の足種認識を強化 */
 .recognized.compact h2{font-size:18px;margin-bottom:8px}
 .recognized.compact{padding:12px;border-radius:18px}
 .recognized.compact .kv{grid-template-columns:78px 1fr;padding:6px 0;gap:6px}
@@ -29,10 +29,10 @@
 @media(max-width:680px){.recognized.compact .kv{grid-template-columns:70px 1fr}.recognized.compact .v{font-size:17px}.resultsCard .result .num{font-size:23px}}
 
 </style>
-<!-- BBTOUCH_VERSION: v3.5.3 REAL -->
+<!-- BBTOUCH_VERSION: v3.5.4 -->
 </head>
 <body><div class="wrap">
-<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v3.5.3</span></h1>
+<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v3.5.4</span></h1>
 <p class="sub">楽天FXのボリンジャーバンド凡例専用パーサー。画像と入力値は外部送信しません。</p>
 
 <div class="card">
@@ -86,7 +86,7 @@
   <div id="candidates"></div>
   <p class="small">候補ボタンは「現在値 → SMA → +2σ → -2σ → +3σ → -3σ」の順で入力欄に入ります。</p>
 </div>
-<div class="footer">BB Touch v3.5.3</div>
+<div class="footer">BB Touch v3.5.4</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
@@ -134,11 +134,15 @@ function detectTimeframeFromText(text, trusted=false){
     const re=new RegExp('(?:^|[^0-9])'+n+'(?:時間|時問|時|HOUR|HOURS|HR|H)'+foot+'(?:[^0-9]|$)','i');
     if(re.test(compact) || re.test(upper)) return label;
   }
-  if(/週(?:足|尼|尺|臣|疋)?/.test(compact) || /WEEK|WEEKLY/i.test(upper)) return '週足';
-  if(/日(?:足|尼|尺|臣|疋)?/.test(compact) || /DAY|DAILY/i.test(upper)) return '日足';
-  if(/月(?:足|尼|尺|臣|疋)?/.test(compact) || /MONTH|MONTHLY/i.test(upper)) return '月足';
-  // 足種ボタン専用クロップでは数字だけでもかなり安全に使える。
+  // 漢字系足種。日/週/月はOCRが「曰」「目」「周」「遇」「用」などに崩れやすい。
+  if(/(?:週|周|遇|週|週|迴|回)(?:足|尼|尺|臣|疋)?/.test(compact) || /WEEK|WEEKLY/i.test(upper)) return '週足';
+  if(/(?:日|曰|目|旦)(?:足|尼|尺|臣|疋)?/.test(compact) || /DAY|DAILY/i.test(upper)) return '日足';
+  if(/(?:月|用|朋|冃)(?:足|尼|尺|臣|疋)?/.test(compact) || /MONTH|MONTHLY/i.test(upper)) return '月足';
+  // 足種ボタン専用クロップでは、漢字1文字だけ読めた場合も採用する。
   if(trusted){
+    if(/[週周遇迴回]/.test(compact)) return '週足';
+    if(/[日曰目旦]/.test(compact)) return '日足';
+    if(/[月用朋冃]/.test(compact)) return '月足';
     const nums=[...compact.matchAll(/\d{1,2}/g)].map(m=>m[0]);
     for(const n of nums){
       if(n==='60') return '60分足'; if(n==='30') return '30分足'; if(n==='15') return '15分足';
@@ -162,8 +166,13 @@ function parseChartMeta(text){
 }
 function parseChartMetaSections(full,legend,header){
   const base=parseChartMeta((full||'')+'\n'+(legend||''));
-  const h=parseChartMeta(header||'');
-  const tf=detectTimeframeFromText(header||'',true) || h.tf || base.tf;
+  const headerRaw=header||'';
+  const parts=headerRaw.split('--- 足種ボタンOCR ---');
+  const headerMain=parts[0]||'';
+  const tfOnly=parts.slice(1).join('\n')||'';
+  const h=parseChartMeta(headerMain);
+  // 足種はボタン専用OCRを最優先。日足/週足/月足は漢字OCRが揺れやすいので、ヘッダー全体と混ぜず専用欄だけで判定する。
+  const tf=detectTimeframeFromText(tfOnly,true) || detectTimeframeFromText(headerMain,false) || h.tf || base.tf;
   const pair=h.pair || base.pair;
   return {pair,tf,label:(pair||'通貨ペア未認識')+'・'+(tf||'足種未認識')};
 }
@@ -338,23 +347,25 @@ async function makeHeaderCropBlob(file){
   ctx.drawImage(img,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
   return await canvasToBlob(canvas);
 }
-async function makeTimeframeCropBlob(file){
+async function makeTimeframeCropBlob(file, invert=true){
   const img=await loadImageFromFile(file); const W=img.naturalWidth,H=img.naturalHeight;
-  // 足種ボタン専用クロップ。楽天FXの足種は固定表記なので、この部分を大きく・反転して読む。
-  const sx=Math.round(W*0.30);
-  const sy=Math.round(H*0.090);
-  const sw=Math.round(W*0.24);
-  const sh=Math.round(H*0.070);
-  const canvas=document.createElement('canvas'); canvas.width=sw*9; canvas.height=sh*9;
-  const ctx=canvas.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.imageSmoothingEnabled=true;
-  ctx.filter='contrast(1.7) saturate(1.1)';
+  // 足種ボタン専用クロップ。少し広めに取り、日足/週足/月足の漢字も落ちにくくする。
+  const sx=Math.round(W*0.285);
+  const sy=Math.round(H*0.083);
+  const sw=Math.round(W*0.235);
+  const sh=Math.round(H*0.082);
+  const canvas=document.createElement('canvas'); canvas.width=sw*10; canvas.height=sh*10;
+  const ctx=canvas.getContext('2d'); ctx.fillStyle=invert?'#ffffff':'#05070d'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.imageSmoothingEnabled=true;
+  ctx.filter='contrast(1.9) saturate(1.1)';
   ctx.drawImage(img,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
-  // 黒背景に白文字のボタンを、白背景に黒文字へ反転。Tesseractが読みやすくなる。
-  const im=ctx.getImageData(0,0,canvas.width,canvas.height);
-  for(let i=0;i<im.data.length;i+=4){
-    im.data[i]=255-im.data[i]; im.data[i+1]=255-im.data[i+1]; im.data[i+2]=255-im.data[i+2];
+  if(invert){
+    // 黒背景に白文字のボタンを、白背景に黒文字へ反転。Tesseractが読みやすいことが多い。
+    const im=ctx.getImageData(0,0,canvas.width,canvas.height);
+    for(let i=0;i<im.data.length;i+=4){
+      im.data[i]=255-im.data[i]; im.data[i+1]=255-im.data[i+1]; im.data[i+2]=255-im.data[i+2];
+    }
+    ctx.putImageData(im,0,0);
   }
-  ctx.putImageData(im,0,0);
   return await canvasToBlob(canvas);
 }
 function updateRecognized(o){ setRec('rCurrent',o.current,o.tags?.current); setRec('rSma',o.sma,o.tags?.sma); setRec('rUp2',o.up2,o.tags?.up2); setRec('rLow2',o.low2,o.tags?.low2); setRec('rUp3',o.up3,o.tags?.up3); setRec('rLow3',o.low3,o.tags?.low3); }
@@ -373,9 +384,12 @@ $('ocrBtn').addEventListener('click',async()=>{ const f=$('imageInput').files[0]
   const headerBlob=await makeHeaderCropBlob(f);
   const headerRes=await Tesseract.recognize(headerBlob,'eng+jpn',{logger:m=>{ if(m.status) $('status').textContent=`ヘッダーOCR: ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`; }});
   $('status').textContent='OCR実行中... 足種ボタンを読んでいます';
-  const timeframeBlob=await makeTimeframeCropBlob(f);
+  const timeframeBlob=await makeTimeframeCropBlob(f,true);
   const timeframeRes=await Tesseract.recognize(timeframeBlob,'eng+jpn',{logger:m=>{ if(m.status) $('status').textContent=`足種OCR: ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`; }});
-  const fullText=fullRes.data.text||''; const legendText=legendRes.data.text||''; const headerText=(headerRes.data.text||'')+'\n'+(timeframeRes.data.text||'');
+  // 日足・週足・月足は反転で崩れることがあるので、非反転版も読む。
+  const timeframeBlob2=await makeTimeframeCropBlob(f,false);
+  const timeframeRes2=await Tesseract.recognize(timeframeBlob2,'jpn',{logger:m=>{ if(m.status) $('status').textContent=`足種OCR補助: ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`; }});
+  const fullText=fullRes.data.text||''; const legendText=legendRes.data.text||''; const headerText=(headerRes.data.text||'')+'\n--- 足種ボタンOCR ---\n'+(timeframeRes.data.text||'')+'\n'+(timeframeRes2.data.text||'');
   $('ocrText').value='--- 全体OCR ---\n'+fullText.trim()+'\n\n--- BB凡例クロップ ---\n'+legendText.trim()+'\n\n--- ヘッダークロップ ---\n'+headerText.trim();
   $('status').textContent='OCR完了。認識値を確認してください。'; applyParsed();
 }catch(e){$('status').textContent='OCRエラー: '+(e&&e.message?e.message:e);}});
