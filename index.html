@@ -31,7 +31,7 @@
 </style>
 </head>
 <body><div class="wrap">
-<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v3.5.1</span></h1>
+<h1>BB Touch <span style="font-size:16px;color:var(--muted)">v3.5.2</span></h1>
 <p class="sub">楽天FXのボリンジャーバンド凡例専用パーサー。画像と入力値は外部送信しません。</p>
 
 <div class="card">
@@ -112,30 +112,58 @@ function parseCurrentFromFull(text){
   if(closes.length) return {v:closes[closes.length-1], tag:'C:のみ'};
   return {v:null,tag:''};
 }
+function detectTimeframeFromText(text, trusted=false){
+  const raw=normalizeText(text||'');
+  const compact=raw.replace(/[\s　]+/g,'');
+  const upper=compact.toUpperCase();
+  // 楽天FXの足種表記はこの15種類に固定。OCRの揺れをここに寄せる。
+  const labels=['Tick','10秒足','1分足','5分足','10分足','15分足','30分足','60分足','2時間足','4時間足','8時間足','12時間足','日足','週足','月足'];
+  for(const lab of labels){ if(compact.includes(lab)) return lab; }
+  if(/TICK|T1CK|TlCK/i.test(upper)) return 'Tick';
+  if(/10(秒|秒足|S|SEC|SECOND)/i.test(upper)) return '10秒足';
+  // OCRで「足」が 尼/尺/臣/疋 などに崩れるケースを許容
+  const foot='(?:足|尼|尺|臣|疋|是|走)?';
+  const minuteMap=[['60','60分足'],['30','30分足'],['15','15分足'],['10','10分足'],['5','5分足'],['1','1分足']];
+  for(const [n,label] of minuteMap){
+    const re=new RegExp('(?:^|[^0-9])'+n+'(?:分|芬|份|刀|ﾌ|フ|MIN|MINS|MINUTE|M)'+foot+'(?:[^0-9]|$)','i');
+    if(re.test(compact) || re.test(upper)) return label;
+  }
+  const hourMap=[['12','12時間足'],['8','8時間足'],['4','4時間足'],['2','2時間足']];
+  for(const [n,label] of hourMap){
+    const re=new RegExp('(?:^|[^0-9])'+n+'(?:時間|時問|時|HOUR|HOURS|HR|H)'+foot+'(?:[^0-9]|$)','i');
+    if(re.test(compact) || re.test(upper)) return label;
+  }
+  if(/週(?:足|尼|尺|臣|疋)?/.test(compact) || /WEEK|WEEKLY/i.test(upper)) return '週足';
+  if(/日(?:足|尼|尺|臣|疋)?/.test(compact) || /DAY|DAILY/i.test(upper)) return '日足';
+  if(/月(?:足|尼|尺|臣|疋)?/.test(compact) || /MONTH|MONTHLY/i.test(upper)) return '月足';
+  // 足種ボタン専用クロップでは数字だけでもかなり安全に使える。
+  if(trusted){
+    const nums=[...compact.matchAll(/\d{1,2}/g)].map(m=>m[0]);
+    for(const n of nums){
+      if(n==='60') return '60分足'; if(n==='30') return '30分足'; if(n==='15') return '15分足';
+      if(n==='10') return '10分足'; if(n==='5') return '5分足'; if(n==='1') return '1分足';
+      if(n==='12') return '12時間足'; if(n==='8') return '8時間足'; if(n==='4') return '4時間足'; if(n==='2') return '2時間足';
+    }
+  }
+  return null;
+}
 function parseChartMeta(text){
-  const t=normalizeText(text||'').toUpperCase().replace(/[\s\n]+/g,' ');
+  const raw=normalizeText(text||'');
+  const t=raw.toUpperCase().replace(/[\s\n]+/g,' ');
   let pair=null, tf=null;
   const ccys=['USD','CHF','JPY','EUR','GBP','AUD','NZD','CAD','ZAR','TRY','MXN'];
-  // 1) 通常表記 CHF/JPY, USD/JPY を優先
   let m=t.match(/\b(USD|CHF|JPY|EUR|GBP|AUD|NZD|CAD|ZAR|TRY|MXN)\s*[\/／\\|I1L]?\s*(USD|CHF|JPY|EUR|GBP|AUD|NZD|CAD|ZAR|TRY|MXN)\b/);
   if(m && m[1]!==m[2]) pair=m[1]+'/'+m[2];
-  // 2) スラッシュがOCRで落ちて CHFJPY になった場合
-  if(!pair){
-    for(const a of ccys){ for(const b of ccys){ if(a!==b && t.includes(a+b)){ pair=a+'/'+b; break; } } if(pair) break; }
-  }
-  // 3) OCRで先頭に余計な文字が付く QCHF/JPY などへの保険
-  if(!pair){
-    for(const a of ccys){ for(const b of ccys){ const re=new RegExp(a+'[^A-Z0-9]{0,3}'+b); if(a!==b && re.test(t)){ pair=a+'/'+b; break; } } if(pair) break; }
-  }
-
-  // 足種。5分足、60分足、4時間足、日足、週足など。
-  m=t.match(/(\d{1,3})\s*(分|ﾌﾝ|FUN|MIN)\s*足/);
-  if(m) tf=m[1]+'分足';
-  if(!tf){ m=t.match(/(\d{1,2})\s*(時間|HOUR|H)\s*足/); if(m) tf=m[1]+'時間足'; }
-  if(!tf){ m=t.match(/(日|週|月)\s*足/); if(m) tf=m[1]+'足'; }
-  // OCRが「5分足」の「足」を落とすことがあるため、通貨ペア直後の時間足ボタンも見る
-  if(!tf){ m=t.match(/\b(1|5|15|30|60)\s*分\b/); if(m) tf=m[1]+'分足'; }
-  if(!tf){ m=t.match(/\b(1|2|4|8)\s*時間\b/); if(m) tf=m[1]+'時間足'; }
+  if(!pair){ for(const a of ccys){ for(const b of ccys){ if(a!==b && t.includes(a+b)){ pair=a+'/'+b; break; } } if(pair) break; } }
+  if(!pair){ for(const a of ccys){ for(const b of ccys){ const re=new RegExp(a+'[^A-Z0-9]{0,3}'+b); if(a!==b && re.test(t)){ pair=a+'/'+b; break; } } if(pair) break; } }
+  tf=detectTimeframeFromText(raw,false);
+  return {pair,tf,label:(pair||'通貨ペア未認識')+'・'+(tf||'足種未認識')};
+}
+function parseChartMetaSections(full,legend,header){
+  const base=parseChartMeta((full||'')+'\n'+(legend||''));
+  const h=parseChartMeta(header||'');
+  const tf=detectTimeframeFromText(header||'',true) || h.tf || base.tf;
+  const pair=h.pair || base.pair;
   return {pair,tf,label:(pair||'通貨ペア未認識')+'・'+(tf||'足種未認識')};
 }
 function updateResultMeta(meta){ if($('resultMeta')) $('resultMeta').textContent=(meta&&meta.label)||'通貨ペア・足種 未認識'; }
@@ -309,9 +337,28 @@ async function makeHeaderCropBlob(file){
   ctx.drawImage(img,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
   return await canvasToBlob(canvas);
 }
+async function makeTimeframeCropBlob(file){
+  const img=await loadImageFromFile(file); const W=img.naturalWidth,H=img.naturalHeight;
+  // 足種ボタン専用クロップ。楽天FXの足種は固定表記なので、この部分を大きく・反転して読む。
+  const sx=Math.round(W*0.30);
+  const sy=Math.round(H*0.090);
+  const sw=Math.round(W*0.24);
+  const sh=Math.round(H*0.070);
+  const canvas=document.createElement('canvas'); canvas.width=sw*9; canvas.height=sh*9;
+  const ctx=canvas.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.imageSmoothingEnabled=true;
+  ctx.filter='contrast(1.7) saturate(1.1)';
+  ctx.drawImage(img,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
+  // 黒背景に白文字のボタンを、白背景に黒文字へ反転。Tesseractが読みやすくなる。
+  const im=ctx.getImageData(0,0,canvas.width,canvas.height);
+  for(let i=0;i<im.data.length;i+=4){
+    im.data[i]=255-im.data[i]; im.data[i+1]=255-im.data[i+1]; im.data[i+2]=255-im.data[i+2];
+  }
+  ctx.putImageData(im,0,0);
+  return await canvasToBlob(canvas);
+}
 function updateRecognized(o){ setRec('rCurrent',o.current,o.tags?.current); setRec('rSma',o.sma,o.tags?.sma); setRec('rUp2',o.up2,o.tags?.up2); setRec('rLow2',o.low2,o.tags?.low2); setRec('rUp3',o.up3,o.tags?.up3); setRec('rLow3',o.low3,o.tags?.low3); }
 function splitOcrSections(txt){ const t=txt||''; const h=t.split('--- ヘッダークロップ ---'); const beforeHeader=h[0]||t; const header=h[1]||''; const p=beforeHeader.split('--- BB凡例クロップ ---'); return {full:p[0]||t, legend:p[1]||t, header}; }
-function applyParsed(){ const s=splitOcrSections($('ocrText').value); const meta=parseChartMeta(s.full+'\n'+s.legend+'\n'+s.header); updateResultMeta(meta); const o=parseRakuten(s.full,s.legend); setVal('current',o.current); setVal('sma',o.sma); setVal('up2',o.up2); setVal('low2',o.low2); setVal('up3',o.up3); setVal('low3',o.low3); updateRecognized(o); makeCandidates(); return o; }
+function applyParsed(){ const s=splitOcrSections($('ocrText').value); const meta=parseChartMetaSections(s.full,s.legend,s.header); updateResultMeta(meta); const o=parseRakuten(s.full,s.legend); setVal('current',o.current); setVal('sma',o.sma); setVal('up2',o.up2); setVal('low2',o.low2); setVal('up3',o.up3); setVal('low3',o.low3); updateRecognized(o); makeCandidates(); return o; }
 function makeCandidates(){ const vals=[...new Set(allPriceValues($('ocrText').value).map(v=>fmt(v)))]; $('candidates').innerHTML=vals.map(v=>`<button type="button" class="pill" onclick="fillNext('${v}')">${v}</button>`).join(''); }
 let fillOrder=['current','sma','up2','low2','up3','low3'], fillIdx=0; window.fillNext=(v)=>{ setVal(fillOrder[fillIdx%fillOrder.length],parseFloat(v)); fillIdx++; };
 $('imageInput').addEventListener('change',()=>{const f=$('imageInput').files[0]; if(!f)return; const url=URL.createObjectURL(f); $('preview').src=url; $('confirmArea').classList.remove('hide');});
@@ -324,7 +371,10 @@ $('ocrBtn').addEventListener('click',async()=>{ const f=$('imageInput').files[0]
   $('status').textContent='OCR実行中... 通貨ペア・足種を読んでいます';
   const headerBlob=await makeHeaderCropBlob(f);
   const headerRes=await Tesseract.recognize(headerBlob,'eng+jpn',{logger:m=>{ if(m.status) $('status').textContent=`ヘッダーOCR: ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`; }});
-  const fullText=fullRes.data.text||''; const legendText=legendRes.data.text||''; const headerText=headerRes.data.text||'';
+  $('status').textContent='OCR実行中... 足種ボタンを読んでいます';
+  const timeframeBlob=await makeTimeframeCropBlob(f);
+  const timeframeRes=await Tesseract.recognize(timeframeBlob,'eng+jpn',{logger:m=>{ if(m.status) $('status').textContent=`足種OCR: ${m.status} ${m.progress?Math.round(m.progress*100)+'%':''}`; }});
+  const fullText=fullRes.data.text||''; const legendText=legendRes.data.text||''; const headerText=(headerRes.data.text||'')+'\n'+(timeframeRes.data.text||'');
   $('ocrText').value='--- 全体OCR ---\n'+fullText.trim()+'\n\n--- BB凡例クロップ ---\n'+legendText.trim()+'\n\n--- ヘッダークロップ ---\n'+headerText.trim();
   $('status').textContent='OCR完了。認識値を確認してください。'; applyParsed();
 }catch(e){$('status').textContent='OCRエラー: '+(e&&e.message?e.message:e);}});
